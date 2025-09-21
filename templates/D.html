@@ -1,0 +1,252 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>ML Builder (Professional)</title>
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<style>
+  :root {
+    --bg:#0f161d; --panel:#11151a; --card:#1c2228;
+    --muted:#9aa6b2; --accent:#4cafef;
+  }
+  html,body {height:100%;margin:0;background:var(--bg);font-family:Inter,Segoe UI,Helvetica,Arial;color:#e6eef8;overflow:hidden}
+
+  /* Sidebar */
+  .sidebar {width:140px;background:var(--panel);position:fixed;left:0;top:0;bottom:0;padding:12px;border-right:1px solid #0b1014}
+  .sidebar h3 {margin:0 0 10px;color:var(--muted);font-size:12px}
+  .sb-item {display:flex;align-items:center;gap:6px;padding:6px;border-radius:6px;cursor:grab;margin-bottom:8px;font-size:12px}
+  .sb-item:hover {background:#0f212f}
+  .sb-item svg {width:18px;height:18px;flex-shrink:0}
+
+  /* Canvas */
+  .canvas-wrap {position:fixed;left:140px;top:0;right:0;bottom:0;padding:10px;transition:right 0.36s}
+  .canvas-wrap.with-panel {right:320px}
+  #canvas {width:100%;height:100%;background:linear-gradient(180deg, rgba(0,0,0,0.02), transparent);border:1px dashed #132028;border-radius:10px;position:relative;overflow:hidden}
+  .placeholder {position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);color:var(--muted)}
+
+  /* Blocks */
+  .block-wrapper {position:absolute;transform-origin:left top;user-select:none}
+  .block-box {width:160px;min-height:100px;background:var(--card);border:1px solid #162025;border-radius:8px;padding:6px;display:flex;flex-direction:column;align-items:center;gap:4px;position:relative;cursor:grab;box-sizing:border-box}
+  .block-title {font-size:12px;font-weight:600;margin-bottom:4px;text-align:center;color:#e6eef8}
+  .inner-box {background:#252c33;border-radius:6px;padding:6px;width:90%;display:flex;flex-direction:column;align-items:center;justify-content:center;margin-top:2px}
+  .neuron-strip,.square-strip {display:flex;flex-direction:column;align-items:center;gap:4px;margin:4px 0}
+  .neuron {width:12px;height:12px;border:2px solid #cfcfcf;border-radius:50%;background:transparent}
+  .square {width:12px;height:12px;border:2px solid #7da2c8;background:transparent}
+  .block-extra {font-size:11px;color:#e6eef8;margin-top:4px;text-align:center}
+
+  /* Data Source */
+  .block-box.data {background:#20272e;border:1px solid #3a556f}
+  .block-box.data .inner-box {background:#1a2027;border:1px solid #2f4255;color:#6bb3f2;font-size:11px;font-weight:500;padding:6px;text-align:center}
+  .block-box.data .inner-box svg {width:18px;height:18px;margin-bottom:4px;stroke:#6bb3f2;}
+
+  /* Attention */
+  .block-box.attention {background:#23202a;border:1px solid #6a4f7d}
+  .block-box.attention .inner-box {background:#1a1920;border:1px solid #3b2f45;color:#c9b2e5;font-size:11px;padding:6px;line-height:1.4;text-align:center}
+  .block-box.attention .inner-box .step {margin:2px 0}
+  .block-box.attention .inner-box .arrow {font-size:11px;color:#9d7fb8;margin:2px 0}
+
+  /* Side panel */
+  .properties {width:320px;position:fixed;right:-100%;top:0;bottom:0;padding:16px;display:flex;flex-direction:column;z-index:60;background:#1b1f24;border-left:1px solid #2a2f35;box-shadow:-6px 0 16px rgba(0,0,0,0.5);transition:right 0.3s}
+  .properties.open { right:0; }
+  .properties-header {display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+  .properties h3 {margin:0;font-size:15px;font-weight:600;color:#eaeef2}
+  .close-btn {background:none;border:none;color:#888;cursor:pointer}
+  .close-btn:hover {color:#fff}
+  .properties label {margin-top:10px;font-size:12px;font-weight:500;color:#c4c8cc}
+  .properties input,.properties select {width:100%;margin-top:4px;padding:6px;border-radius:6px;border:1px solid #2f363d;background:#11161c;color:#eaeef2;font-size:12px;}
+</style>
+</head>
+<body>
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <h3>Blocks</h3>
+    <div class="sb-item" draggable="true" data-type="data">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#9fb6c8" stroke-width="1.6">
+        <ellipse cx="12" cy="5" rx="7" ry="3"/>
+        <path d="M5 5v6c0 1.7 3.1 3 7 3s7-1.3 7-3V5"/>
+        <path d="M5 11v6c0 1.7 3.1 3 7 3s7-1.3 7-3"/>
+      </svg> Data
+    </div>
+    <div class="sb-item" draggable="true" data-type="input">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#7ec7ff" stroke-width="1.6"><circle cx="7" cy="12" r="2"/><circle cx="12" cy="7" r="2"/><circle cx="17" cy="12" r="2"/></svg> Input
+    </div>
+    <div class="sb-item" draggable="true" data-type="encoder">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#6ee7b7" stroke-width="1.6"><rect x="4" y="6" width="16" height="3" rx="1"/><rect x="6" y="11" width="12" height="3" rx="1"/></svg> Encoder
+    </div>
+    <div class="sb-item" draggable="true" data-type="attention">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#d29bff" stroke-width="1.6"><circle cx="12" cy="12" r="4"/></svg> Attention
+    </div>
+    <div class="sb-item" draggable="true" data-type="decoder">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#6ee7b7" stroke-width="1.6"><rect x="4" y="6" width="16" height="3" rx="1"/><rect x="6" y="11" width="12" height="3" rx="1"/></svg> Decoder
+    </div>
+    <div class="sb-item" draggable="true" data-type="output">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#7ec7ff" stroke-width="1.6"><circle cx="12" cy="12" r="3"/></svg> Output
+    </div>
+  </div>
+
+  <!-- Canvas -->
+  <div class="canvas-wrap" id="canvasWrap">
+    <div id="canvas">
+      <div class="placeholder" id="placeholder">Blank canvas — drag blocks here</div>
+    </div>
+  </div>
+
+  <!-- Side panel -->
+  <div class="properties" id="propertiesPanel">
+    <div class="properties-header">
+      <h3>Properties</h3>
+      <button class="close-btn" id="closePanelBtn">✕</button>
+    </div>
+    <label>Neurons</label>
+    <input type="number" id="neuronsProp" min="1" value="4">
+    <label>Activation</label>
+    <select id="activationProp">
+      <option>ReLU</option><option>Sigmoid</option>
+      <option>Tanh</option><option>Softmax</option>
+      <option>Linear</option>
+    </select>
+  </div>
+
+<script>
+let model={blocks:[]};
+const canvas=document.getElementById('canvas');
+const placeholder=document.getElementById('placeholder');
+const panel=document.getElementById('propertiesPanel');
+const neuronsInput=document.getElementById('neuronsProp');
+const activationSelect=document.getElementById('activationProp');
+let selectedBlockId=null;
+
+function addBlockToModel(type,x,y){
+  model.blocks.push({id:Date.now()+Math.random(),type,x,y,neurons:4,activation:'ReLU'});
+  render();
+}
+
+function render(){
+  placeholder.style.display=model.blocks.length?'none':'block';
+  canvas.querySelectorAll('.block-wrapper').forEach(el=>el.remove());
+
+  model.blocks.forEach(b=>{
+    const wrapper=document.createElement('div');
+    wrapper.className='block-wrapper';
+    wrapper.style.left=b.x+'px';
+    wrapper.style.top=b.y+'px';
+    wrapper.dataset.id=b.id;
+
+    const box=document.createElement('div');
+    box.className='block-box';
+
+    const title=document.createElement('div');
+    title.className='block-title';
+    title.textContent={
+      data:'Data Source',input:'Input Layer',
+      encoder:'Encoder',decoder:'Decoder',
+      attention:'Attention',output:'Output'
+    }[b.type];
+    box.appendChild(title);
+
+    if(b.type==='data'){
+      box.classList.add('data');
+      const inner=document.createElement('div');inner.className='inner-box';
+      inner.innerHTML=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+        <ellipse cx="12" cy="5" rx="7" ry="3"/>
+        <path d="M5 5v6c0 1.7 3.1 3 7 3s7-1.3 7-3V5"/>
+        <path d="M5 11v6c0 1.7 3.1 3 7 3s7-1.3 7-3"/>
+      </svg><div>CSV | JSON</div>`;
+      box.appendChild(inner);
+    }
+    else if(b.type==='attention'){
+      box.classList.add('attention');
+      const inner=document.createElement('div');inner.className='inner-box';
+      inner.innerHTML='<div class="step">Q / K / V</div><div class="arrow">↓</div><div class="step">Softmax</div><div class="arrow">↓</div><div class="step">Weighted Sum</div>';
+      box.appendChild(inner);
+    }
+    else {
+      const inner=document.createElement('div');inner.className='inner-box';
+      const strip=(b.type==='input'||b.type==='output')?'neuron-strip':'square-strip';
+      const container=document.createElement('div');container.className=strip;
+      for(let i=0;i<b.neurons;i++){
+        const el=document.createElement('div');
+        el.className=(strip==='neuron-strip')?'neuron':'square';
+        container.appendChild(el);
+      }
+      inner.appendChild(container);
+      box.appendChild(inner);
+      const extra=document.createElement('div');extra.className='block-extra';
+      extra.textContent=b.neurons+' × '+b.activation;
+      box.appendChild(extra);
+    }
+
+    wrapper.appendChild(box);
+    canvas.appendChild(wrapper);
+
+    makeDraggable(wrapper,b);
+
+    wrapper.onclick=(e)=>{
+      e.stopPropagation();
+      selectedBlockId=b.id;
+      if(['input','output','encoder','decoder'].includes(b.type)){
+        openPanel(b);
+      } else {
+        closePanel();
+      }
+    };
+  });
+}
+
+function makeDraggable(wrapper,b){
+  let startX,startY,origX,origY;
+  wrapper.addEventListener('mousedown',e=>{
+    if(e.target.closest('.properties'))return;
+    e.preventDefault();
+    startX=e.clientX;startY=e.clientY;
+    origX=b.x;origY=b.y;
+    function onMouseMove(ev){
+      b.x=origX+(ev.clientX-startX);
+      b.y=origY+(ev.clientY-startY);
+      wrapper.style.left=b.x+'px';
+      wrapper.style.top=b.y+'px';
+    }
+    function onMouseUp(){
+      document.removeEventListener('mousemove',onMouseMove);
+      document.removeEventListener('mouseup',onMouseUp);
+    }
+    document.addEventListener('mousemove',onMouseMove);
+    document.addEventListener('mouseup',onMouseUp);
+  });
+}
+
+function openPanel(b){
+  panel.classList.add('open');
+  neuronsInput.value=b.neurons;
+  activationSelect.value=b.activation;
+}
+function closePanel(){panel.classList.remove('open');}
+document.getElementById('closePanelBtn').onclick=closePanel;
+
+neuronsInput.oninput=(e)=>{
+  const b=model.blocks.find(x=>x.id==selectedBlockId);
+  if(b){b.neurons=parseInt(e.target.value)||1;render();}
+};
+activationSelect.onchange=(e)=>{
+  const b=model.blocks.find(x=>x.id==selectedBlockId);
+  if(b){b.activation=e.target.value;render();}
+};
+
+document.querySelectorAll('.sb-item').forEach(item=>{
+  item.addEventListener('dragstart',e=>{e.dataTransfer.setData('type',item.dataset.type);});
+});
+canvas.addEventListener('dragover',e=>e.preventDefault());
+canvas.addEventListener('drop',e=>{
+  e.preventDefault();
+  const type=e.dataTransfer.getData('type');
+  if(!type)return;
+  const rect=canvas.getBoundingClientRect();
+  addBlockToModel(type,e.clientX-rect.left-60,e.clientY-rect.top-30);
+});
+
+document.body.addEventListener('click',()=>{closePanel();});
+
+render();
+</script>
+</body>
+</html>
