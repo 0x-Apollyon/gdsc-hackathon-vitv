@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thinking Machines: Learn about AI</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg-solid: #08141E;
+            --navbar-bg: rgba(15, 23, 42, 0.75);
+            --text-primary: #f8fafc;
+            --text-secondary: #cbd5e1;
+            
+            /* --- Enhanced Liquid Glass UI --- */
+            --liquid-glass-bg: radial-gradient(circle at 100% 0%, rgba(56, 189, 248, 0.15), transparent 50%),
+                               radial-gradient(circle at 0% 100%, rgba(139, 92, 246, 0.1), transparent 50%),
+                               rgba(15, 23, 42, 0.7);
+            --liquid-glass-border: rgba(255, 255, 255, 0.25);
+            --soft-glow-shadow: 0 20px 60px rgba(0, 0, 0, 0.4),
+                                0 8px 24px rgba(56, 189, 248, 0.1);
+            --animation-timing: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+
+            --glass-btn-bg: rgba(30, 41, 59, 0.6);
+            --glass-border: rgba(255, 255, 255, 0.15);
+            --accent-color: #38bdf8;
+            --secondary-accent: #8b5cf6;
+            --font-family: 'Inter', sans-serif;
+            --header-height: 80px;
+        }
+
+        /* --- Base & Reset --- */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: var(--font-family);
+            background-color: var(--bg-solid);
+            color: var(--text-primary);
+            overflow-x: hidden;
+        }
+        
+        /* --- FIXED: Remove all hyperlink underlines --- */
+        a { color: inherit; text-decoration: none !important; }
+        a:hover, a:focus, a:active, a:visited { text-decoration: none !important; }
+        
+        /* --- Improved Navbar --- */
+        header {
+            position: sticky; top: 0; width: 100%; z-index: 1000;
+            background: var(--navbar-bg); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+            border-bottom: 1px solid var(--glass-border); height: var(--header-height);
+            display: flex; align-items: center;
+        }
+        .navbar-content {
+            display: flex; justify-content: space-between; align-items: center;
+            width: 100%; max-width: 1440px; margin: 0 auto; padding: 0 2rem;
+        }
+        .logo { display: flex; align-items: center; gap: 0.75rem; font-weight: 500; font-size: 1.1rem; }
+        .logo img { height: 50px; width: auto; }
+        .desktop-nav { display: flex; gap: 2.5rem; }
+        .desktop-nav a { color: var(--text-secondary); font-weight: 500; transition: all 0.3s ease; }
+        .desktop-nav a:hover { color: var(--text-primary); transform: translateY(-2px); }
+        .header-actions { display: flex; align-items: center; gap: 1rem; }
+        .btn {
+            display: inline-block; padding: 0.75rem 1.75rem; border-radius: 50px;
+            font-weight: 500; white-space: nowrap; transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            color: var(--text-primary);
+        }
+        .glass-btn {
+            background: var(--glass-btn-bg); border: 1px solid var(--glass-border);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+        }
+        .glass-btn:hover {
+            background: rgba(255, 255, 255, 0.15); transform: translateY(-3px) scale(1.03);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.25);
+        }
+        
+        /* --- Parallax Wrapper with Opacity Control --- */
+        .parallax-wrapper {
+            position: relative; z-index: 1;
+            background-image: url('/static/background3.jpg');
+            background-attachment: fixed; background-position: center;
+            background-repeat: no-repeat; background-size: cover;
+        }
+        .parallax-wrapper::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: rgba(8, 20, 30, 0.45);
+            z-index: -1;
+        }
+        
+        /* --- Hero Section --- */
+        .page-hero-section { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 90vh; text-align: center; padding: var(--header-height) 2rem 2rem; }
+        .page-hero-content h1 { font-size: 3.5rem; font-weight: 600; margin-bottom: 1.5rem; text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5); }
+        .page-hero-content p { font-size: 1.25rem; max-width: 700px; color: var(--text-secondary); line-height: 1.6; text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5); }
+
+        /* --- Enhanced Lesson Section Layout --- */
+        .lesson-section { padding: 6rem 2rem; }
+        .lesson-header { text-align: center; max-width: 800px; margin: 0 auto 5rem auto; }
+        .lesson-header span { font-size: 1rem; color: var(--accent-color); font-weight: 500; margin-bottom: 0.5rem; display: block; }
+        .lesson-header h2 { font-size: 2.75rem; margin-bottom: 1rem; }
+        .lesson-header p { font-size: 1.1rem; color: var(--text-secondary); line-height: 1.7; }
+
+        .lesson-step {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 4rem;
+            min-height: 60vh;
+        }
+
+        /* --- Enhanced Liquid Glass Card --- */
+        .liquid-glass-card {
+            width: 100%;
+            max-width: 900px;
+            padding: 3rem;
+            background: var(--liquid-glass-bg);
+            border: 1px solid var(--liquid-glass-border);
+            border-radius: 24px;
+            backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            box-shadow: var(--soft-glow-shadow);
+            display: flex;
+            gap: 3rem;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        /* Add subtle animated gradient overlay */
+        .liquid-glass-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: -100%;
+            width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.03), transparent);
+            transition: left 0.8s ease;
+            pointer-events: none;
+        }
+        .liquid-glass-card:hover::before {
+            left: 100%;
+        }
+        
+        .lesson-text { flex: 1; position: relative; z-index: 2; }
+        .lesson-visual { flex: 1; display: flex; justify-content: center; align-items: center; position: relative; z-index: 2; }
+
+        .lesson-text h4 { font-size: 1.75rem; font-weight: 600; margin-bottom: 1rem; }
+        .lesson-text p { color: var(--text-secondary); line-height: 1.7; margin-bottom: 1rem; }
+        .lesson-text strong { color: var(--text-primary); font-weight: 500; }
+        
+        /* --- Enhanced Scroll Animation Classes --- */
+        .hidden-on-scroll { 
+            opacity: 0; 
+            transition: opacity 1.2s ease-out, transform 1.2s ease-out; 
+        }
+        .hidden-on-scroll.from-left { transform: translateX(-40px); }
+        .hidden-on-scroll.from-right { transform: translateX(40px); }
+        .hidden-on-scroll.from-bottom { transform: translateY(40px); }
+        .hidden-on-scroll.fade-in { transform: translateY(20px); }
+        .hidden-on-scroll.show {
+            opacity: 1;
+            transform: translateX(0) translateY(0);
+        }
+
+        /* Loading animations for initial page load */
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes slideInLeft {
+            from { opacity: 0; transform: translateX(-30px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        @keyframes slideInRight {
+            from { opacity: 0; transform: translateX(30px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        /* Hero section staggered animation */
+        .hero-content > * {
+            opacity: 0;
+            animation-fill-mode: forwards;
+        }
+
+        .hero-content h1 {
+            animation: slideUp 0.8s ease-out 0.3s forwards;
+        }
+
+        .hero-content p {
+            animation: slideUp 0.8s ease-out 0.5s forwards;
+        }
+
+        .hero-content .btn {
+            animation: slideUp 0.8s ease-out 0.7s forwards;
+        }
+
+        /* --- ENHANCED Neural Network Visualization --- */
+        .mlp-diagram {
+            display: flex;
+            gap: 4rem;
+            align-items: center;
+            position: relative;
+            width: 300px;
+            height: 200px;
+        }
+        
+        .mlp-layer {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            position: relative;
+            z-index: 2; /* Above connections */
+        }
+        
+        .neuron {
+            width: 36px;
+            height: 36px;
+            background: radial-gradient(circle, rgba(56, 189, 248, 0.3), rgba(15, 23, 42, 0.8));
+            border: 2px solid var(--accent-color);
+            border-radius: 50%;
+            box-shadow: 
+                inset 0 0 12px rgba(56, 189, 248, 0.4),
+                0 0 16px rgba(56, 189, 248, 0.3);
+            position: relative;
+            transition: all 0.6s ease; /* Slower, smoother transitions */
+            transform-origin: center; /* Ensure scaling happens from center */
+        }
+        
+        .neuron.firing {
+            box-shadow: 
+                inset 0 0 20px rgba(56, 189, 248, 0.8),
+                0 0 25px rgba(56, 189, 248, 0.6);
+            transform: scale(1.1);
+            animation: neuron-pulse 1.2s ease-in-out; /* Longer pulse duration */
+        }
+        
+        @keyframes neuron-pulse {
+            0%, 100% { 
+                box-shadow: 
+                    inset 0 0 20px rgba(56, 189, 248, 0.8),
+                    0 0 25px rgba(56, 189, 248, 0.6);
+            }
+            50% { 
+                box-shadow: 
+                    inset 0 0 30px rgba(56, 189, 248, 1),
+                    0 0 40px rgba(56, 189, 248, 0.8);
+            }
+        }
+        
+        /* Neural Network Connections - Fixed positioning */
+        .connection {
+            position: absolute;
+            height: 2px;
+            background: linear-gradient(90deg, var(--accent-color), rgba(56, 189, 248, 0.3));
+            opacity: 0.2; /* Start dimmer */
+            transform-origin: left center;
+            transition: all 0.8s ease; /* Slower transitions */
+            z-index: 1; /* Below neurons but above background */
+            pointer-events: none; /* Prevent interaction issues */
+        }
+        
+        .connection.active {
+            opacity: 1;
+            background: linear-gradient(90deg, var(--accent-color), rgba(56, 189, 248, 0.6));
+            box-shadow: 0 0 8px var(--accent-color);
+            animation: pulse-connection 1.6s ease-in-out; /* Slower pulse */
+        }
+        
+        @keyframes pulse-connection {
+            0%, 100% { 
+                opacity: 1; 
+                box-shadow: 0 0 8px var(--accent-color);
+            }
+            25% { 
+                opacity: 0.7; 
+                box-shadow: 0 0 12px var(--accent-color);
+            }
+            50% { 
+                opacity: 0.4; 
+                box-shadow: 0 0 6px var(--accent-color);
+            }
+            75% { 
+                opacity: 0.8; 
+                box-shadow: 0 0 10px var(--accent-color);
+            }
+        }
+        
+        /* --- Enhanced Transformer Visualization --- */
+        .attention-diagram { font-size: 1.25rem; font-weight: 500; color: var(--text-secondary); text-align: center; }
+        .attention-word {
+            display: inline-block; margin: 0 0.5rem; padding: 0.75rem 1.25rem;
+            border-radius: 12px; transition: all 0.8s ease; /* Slower, more graceful transitions */
+            border: 1px solid transparent;
+        }
+        .attention-word.dimmed { 
+            opacity: 0.25; 
+            transform: scale(0.92); 
+            filter: grayscale(0.3); /* Subtle desaturation */
+        }
+        .attention-word.active {
+            color: var(--text-primary);
+            background: linear-gradient(135deg, rgba(56, 189, 248, 0.15), rgba(139, 92, 246, 0.1));
+            border: 1px solid rgba(56, 189, 248, 0.4);
+            transform: scale(1.08); /* More subtle scaling */
+            box-shadow: 0 2px 8px rgba(56, 189, 248, 0.15); /* Much subtler shadow */
+            /* Removed the pulsing animation for cleaner look */
+        }
+        .attention-word.related {
+            color: var(--text-primary);
+            background: rgba(56, 189, 248, 0.08);
+            border: 1px solid rgba(56, 189, 248, 0.25);
+            transform: scale(1.03);
+            box-shadow: 0 1px 4px rgba(56, 189, 248, 0.1);
+        }
+        
+        /* Call to Action Section */
+        .cta-section { padding-bottom: 8rem; }
+        .cta-section .glass-btn { padding: 1rem 2.5rem; font-size: 1.1rem; font-weight: 500; }
+
+        /* --- Mobile Navigation --- */
+        .mobile-nav-toggle { display: none; background: none; border: none; cursor: pointer; z-index: 1001; }
+        .hamburger { display: block; position: relative; width: 24px; height: 2px; background-color: var(--text-primary); transition: all 0.3s ease-in-out; }
+        .hamburger::before, .hamburger::after { content: ''; position: absolute; width: 24px; height: 2px; background-color: var(--text-primary); transition: all 0.3s ease-in-out; }
+        .hamburger::before { top: -8px; } .hamburger::after { top: 8px; }
+        .mobile-nav {
+            display: none; position: absolute; top: 100%; left: 0; right: 0;
+            flex-direction: column; align-items: center; gap: 2rem; padding: 2rem;
+            background: var(--navbar-bg); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--glass-border); z-index: 999;
+        }
+        .mobile-nav.active { display: flex; }
+        .mobile-nav-toggle.active .hamburger { background-color: transparent; }
+        .mobile-nav-toggle.active .hamburger::before { transform: translateY(8px) rotate(45deg); }
+        .mobile-nav-toggle.active .hamburger::after { transform: translateY(-8px) rotate(-45deg); }
+
+        /* --- Responsive --- */
+        @media (max-width: 768px) {
+            :root { --header-height: 70px; }
+            .navbar-content { padding: 0 1rem; }
+            .desktop-nav, .header-actions .glass-btn { display: none; }
+            .mobile-nav-toggle { display: block; }
+            
+            .liquid-glass-card { flex-direction: column; gap: 2rem; padding: 2rem; }
+            .lesson-header h2 { font-size: 2rem; }
+            .lesson-text h4 { font-size: 1.5rem; }
+            .page-hero-content h1 { font-size: 2.75rem; }
+            .page-hero-content p { font-size: 1.1rem; }
+            .mlp-diagram { gap: 2rem; width: 250px; height: 150px; }
+            .neuron { width: 28px; height: 28px; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="navbar-content">
+            <a href="/" class="logo">
+                <img src="/static/logo.png" alt="Thinking Machines Logo">
+                <span>Thinking Machines</span>
+            </a>
+            <nav class="desktop-nav">
+                <a href="/how-to">How it Works</a>
+                <a href="/learn">Learn</a>
+            </nav>
+            <div class="header-actions">
+                <a href="/create" class="btn glass-btn">Start Building</a>
+                <button class="mobile-nav-toggle" aria-label="Toggle navigation">
+                    <span class="hamburger"></span>
+                </button>
+            </div>
+        </div>
+        <nav class="mobile-nav">
+            <a href="/how-to">How it Works</a>
+            <a href="/learn">Learn</a>
+        </nav>
+    </header>
+
+    <main>
+        <div class="parallax-wrapper">
+            <section class="page-hero-section">
+                <div class="page-hero-content">
+                    <h1>Demystifying AI</h1>
+                    <p>Complex concepts, simplified. Explore the fundamental building blocks of modern artificial intelligence in these bite-sized lessons.</p>
+                </div>
+            </section>
+            
+            <!-- Lesson 1: Neural Networks (MLP) -->
+            <section class="lesson-section">
+                <div class="lesson-header hidden-on-scroll fade-in">
+                    <span>Core Concept 01</span>
+                    <h2>The Neural Network</h2>
+                    <p>At the heart of deep learning is the Multi-Layer Perceptron (MLP), a structure inspired by the human brain that learns to find patterns in data.</p>
+                </div>
+                
+                <div class="lesson-step">
+                    <div class="liquid-glass-card hidden-on-scroll from-left">
+                        <div class="lesson-text">
+                            <h4>Neurons & Layers</h4>
+                            <p>A neural network is made of layers of interconnected nodes called <strong>neurons</strong>. Think of each neuron as a tiny calculator that takes in information, performs a simple computation, and passes the result to the next layer.</p>
+                            <p>Groups of these neurons form <strong>layers</strong>: an input layer to receive data, hidden layers to process it, and an output layer to produce a final result or prediction.</p>
+                        </div>
+                        <div class="lesson-visual">
+                            <div id="mlp-diagram" class="mlp-diagram">
+                                <div class="mlp-layer" data-layer="0">
+                                    <div class="neuron" data-neuron="0"></div>
+                                    <div class="neuron" data-neuron="1"></div>
+                                    <div class="neuron" data-neuron="2"></div>
+                                </div>
+                                <div class="mlp-layer" data-layer="1">
+                                    <div class="neuron" data-neuron="0"></div>
+                                    <div class="neuron" data-neuron="1"></div>
+                                    <div class="neuron" data-neuron="2"></div>
+                                    <div class="neuron" data-neuron="3"></div>
+                                </div>
+                                <div class="mlp-layer" data-layer="2">
+                                    <div class="neuron" data-neuron="0"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Lesson 2: Transformers -->
+            <section class="lesson-section">
+                <div class="lesson-header hidden-on-scroll fade-in">
+                    <span>Core Concept 02</span>
+                    <h2>The Transformer</h2>
+                    <p>A revolutionary architecture that excels at understanding context and relationships in sequential data, like text. It's the engine behind models like GPT.</p>
+                </div>
+
+                <div class="lesson-step">
+                    <div class="liquid-glass-card hidden-on-scroll from-right">
+                        <div class="lesson-text">
+                            <h4>The Power of Attention</h4>
+                            <p>The Transformer's superpower is the <strong>"self-attention" mechanism</strong>. Instead of processing a sentence word-by-word, it can look at all words simultaneously.</p>
+                            <p>For each word, it calculates an "attention score" to determine how relevant every other word in the sentence is. This allows it to understand complex context, grammar, and nuance—just like a human might focus on key phrases while reading.</p>
+                        </div>
+                        <div class="lesson-visual">
+                            <div id="attention-diagram" class="attention-diagram">
+                                <span class="attention-word" data-word="the">The</span>
+                                <span class="attention-word" data-word="robot">robot</span>
+                                <span class="attention-word active" data-word="built">built</span>
+                                <span class="attention-word" data-word="the2">the</span>
+                                <span class="attention-word" data-word="model">model</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+             <section class="page-hero-section cta-section" style="min-height: 50vh;">
+                <div class="page-hero-content hidden-on-scroll from-bottom">
+                    <h1>Ready to Build?</h1>
+                    <p>Now that you understand the concepts, it's time to bring your ideas to life. Start creating your own AI models with our intuitive visual builder.</p>
+                    <br><br>
+                    <a href="/create" class="btn glass-btn">Start Building an AI Network</a>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Mobile Nav Toggle
+            const mobileNavToggle = document.querySelector('.mobile-nav-toggle');
+            const mobileNav = document.querySelector('.mobile-nav');
+            if (mobileNavToggle && mobileNav) {
+                mobileNavToggle.addEventListener('click', function() {
+                    mobileNavToggle.classList.toggle('active');
+                    mobileNav.classList.toggle('active');
+                });
+            }
+
+            // Enhanced Scroll Animations
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('show');
+                        
+                        // Start neural network animation when MLP diagram becomes visible
+                        if (entry.target.querySelector('#mlp-diagram')) {
+                            startNeuralNetworkAnimation();
+                        }
+                        
+                        // Start attention animation when attention diagram becomes visible
+                        if (entry.target.querySelector('#attention-diagram')) {
+                            startAttentionAnimation();
+                        }
+                    }
+                });
+            }, {
+                threshold: 0.3
+            });
+
+            const hiddenElements = document.querySelectorAll('.hidden-on-scroll');
+            hiddenElements.forEach(el => observer.observe(el));
+            
+            // Neural Network Animation System
+            function startNeuralNetworkAnimation() {
+                const mlpDiagram = document.getElementById('mlp-diagram');
+                if (!mlpDiagram) return;
+                
+                // Wait a moment for layout to settle, then create connections
+                setTimeout(() => {
+                    createConnections();
+                }, 100);
+                
+                // Start firing animation - slower, more pleasant timing
+                setInterval(() => {
+                    fireNeuralNetwork();
+                }, 4500); // Increased from 2000ms to 4500ms
+            }
+            
+            function createConnections() {
+                const mlpDiagram = document.getElementById('mlp-diagram');
+                const layers = mlpDiagram.querySelectorAll('.mlp-layer');
+                
+                // Clear any existing connections
+                mlpDiagram.querySelectorAll('.connection').forEach(conn => conn.remove());
+                
+                for (let i = 0; i < layers.length - 1; i++) {
+                    const currentLayer = layers[i];
+                    const nextLayer = layers[i + 1];
+                    const currentNeurons = currentLayer.querySelectorAll('.neuron');
+                    const nextNeurons = nextLayer.querySelectorAll('.neuron');
+                    
+                    currentNeurons.forEach((currentNeuron, currentIndex) => {
+                        nextNeurons.forEach((nextNeuron, nextIndex) => {
+                            const connection = document.createElement('div');
+                            connection.className = 'connection';
+                            connection.dataset.from = `${i}-${currentIndex}`;
+                            connection.dataset.to = `${i + 1}-${nextIndex}`;
+                            
+                            // Get the actual positions relative to the diagram container
+                            const currentRect = currentNeuron.getBoundingClientRect();
+                            const nextRect = nextNeuron.getBoundingClientRect();
+                            const diagramRect = mlpDiagram.getBoundingClientRect();
+                            
+                            // Calculate centers relative to diagram
+                            const startX = currentRect.left + currentRect.width/2 - diagramRect.left;
+                            const startY = currentRect.top + currentRect.height/2 - diagramRect.top;
+                            const endX = nextRect.left + nextRect.width/2 - diagramRect.left;
+                            const endY = nextRect.top + nextRect.height/2 - diagramRect.top;
+                            
+                            // Calculate line properties
+                            const deltaX = endX - startX;
+                            const deltaY = endY - startY;
+                            const length = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+                            const angle = Math.atan2(deltaY, deltaX);
+                            
+                            // Offset from neuron edges (18px radius)
+                            const neuronRadius = 18;
+                            const adjustedStartX = startX + Math.cos(angle) * neuronRadius;
+                            const adjustedStartY = startY + Math.sin(angle) * neuronRadius;
+                            const adjustedLength = length - (neuronRadius * 2);
+                            
+                            // Apply styles
+                            connection.style.position = 'absolute';
+                            connection.style.left = `${adjustedStartX}px`;
+                            connection.style.top = `${adjustedStartY}px`;
+                            connection.style.width = `${adjustedLength}px`;
+                            connection.style.height = '2px';
+                            connection.style.transform = `rotate(${angle}rad)`;
+                            connection.style.transformOrigin = '0 50%';
+                            connection.style.zIndex = '0';
+                            
+                            mlpDiagram.appendChild(connection);
+                        });
+                    });
+                }
+            }
+            
+            function fireNeuralNetwork() {
+                const neurons = document.querySelectorAll('.neuron');
+                const connections = document.querySelectorAll('.connection');
+                
+                // Reset all states
+                neurons.forEach(n => n.classList.remove('firing'));
+                connections.forEach(c => c.classList.remove('active'));
+                
+                // Fire input layer first - more controlled timing
+                const inputNeurons = document.querySelectorAll('[data-layer="0"] .neuron');
+                inputNeurons.forEach((neuron, index) => {
+                    setTimeout(() => {
+                        neuron.classList.add('firing');
+                    }, index * 150); // Sequential firing every 150ms
+                });
+                
+                // Fire hidden layer - wait for input layer to complete
+                setTimeout(() => {
+                    const hiddenNeurons = document.querySelectorAll('[data-layer="1"] .neuron');
+                    hiddenNeurons.forEach((neuron, index) => {
+                        setTimeout(() => {
+                            neuron.classList.add('firing');
+                        }, index * 120); // Sequential firing
+                    });
+                    
+                    // Activate connections from input to hidden - staggered
+                    const inputToHiddenConnections = Array.from(connections).filter(c => 
+                        c.dataset.from.startsWith('0-') && c.dataset.to.startsWith('1-')
+                    );
+                    inputToHiddenConnections.forEach((conn, index) => {
+                        setTimeout(() => {
+                            conn.classList.add('active');
+                        }, index * 60); // Smoother connection activation
+                    });
+                }, 800); // Wait for input layer to finish
+                
+                // Fire output layer - final stage
+                setTimeout(() => {
+                    const outputNeurons = document.querySelectorAll('[data-layer="2"] .neuron');
+                    outputNeurons.forEach((neuron, index) => {
+                        setTimeout(() => {
+                            neuron.classList.add('firing');
+                        }, index * 100);
+                    });
+                    
+                    // Activate connections from hidden to output
+                    const hiddenToOutputConnections = Array.from(connections).filter(c => 
+                        c.dataset.from.startsWith('1-') && c.dataset.to.startsWith('2-')
+                    );
+                    hiddenToOutputConnections.forEach((conn, index) => {
+                        setTimeout(() => {
+                            conn.classList.add('active');
+                        }, index * 80);
+                    });
+                }, 1600); // Wait for hidden layer processing
+            }
+            
+            // Realistic Transformer Attention Animation
+            function startAttentionAnimation() {
+                const words = document.querySelectorAll('.attention-word');
+                
+                // Realistic transformer attention patterns (focus word + max 1 related word)
+                const attentionSequence = [
+                    { focus: 2, related: [1] },     // "built" focuses on "robot"
+                    { focus: 2, related: [4] },     // "built" focuses on "model" 
+                    { focus: 1, related: [] },      // "robot" alone
+                    { focus: 4, related: [2] },     // "model" focuses on "built"
+                    { focus: 0, related: [1] },     // "the" focuses on "robot"
+                    { focus: 3, related: [4] }      // "the" focuses on "model"
+                ];
+                
+                let sequenceIndex = 0;
+                
+                // Start with first pattern
+                updateAttention(attentionSequence[0].focus, attentionSequence[0].related);
+                
+                setInterval(() => {
+                    sequenceIndex = (sequenceIndex + 1) % attentionSequence.length;
+                    const currentStep = attentionSequence[sequenceIndex];
+                    updateAttention(currentStep.focus, currentStep.related);
+                }, 2800); // Slightly faster for better engagement
+                
+                function updateAttention(focusIndex, relatedIndices = []) {
+                    words.forEach((word, index) => {
+                        word.classList.remove('active', 'related', 'dimmed');
+                        
+                        if (index === focusIndex) {
+                            word.classList.add('active');
+                        } else if (relatedIndices.includes(index)) {
+                            word.classList.add('related');
+                        } else {
+                            word.classList.add('dimmed');
+                        }
+                    });
+                }
+            }
+        });
+    </script>
+</body>
+</html>

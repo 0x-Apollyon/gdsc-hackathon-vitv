@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thinking Machines: Build Better Models Faster</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg-solid: #08141E;
+            --navbar-bg: rgba(15, 23, 42, 0.75);
+            --text-primary: #f8fafc;
+            --text-secondary: #cbd5e1;
+            --glass-btn-bg: rgba(30, 41, 59, 0.5);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --accent-color: #38bdf8; /* A subtle blue for icons and quotes */
+            --font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            --header-height: 80px;
+        }
+
+        /* --- Animations --- */
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* --- Base & Reset --- */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: var(--font-family);
+            background-color: var(--bg-solid);
+            color: var(--text-primary);
+            overflow-x: hidden;
+        }
+        a { color: inherit; text-decoration: none; }
+        
+        /* --- Glassmorphism Navbar --- */
+        header {
+            position: sticky; top: 0; width: 100%; z-index: 1000;
+            background: var(--navbar-bg); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--glass-border); height: var(--header-height);
+            display: flex; align-items: center;
+        }
+        .navbar-content {
+            display: flex; justify-content: space-between; align-items: center;
+            width: 100%; max-width: 1440px; margin: 0 auto; padding: 0 2rem;
+        }
+        .logo { display: flex; align-items: center; gap: 0.75rem; font-weight: 500; font-size: 1.1rem; }
+        .logo img { height: 50px; width: auto; }
+        .desktop-nav { display: flex; gap: 2.5rem; }
+        .desktop-nav a { color: var(--text-secondary); font-weight: 500; transition: all 0.3s ease; }
+        .desktop-nav a:hover { color: var(--text-primary); transform: translateY(-2px); }
+
+        /* --- Buttons --- */
+        .btn {
+            display: inline-block; padding: 0.75rem 1.75rem; border-radius: 50px;
+            font-weight: 500; white-space: nowrap; transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+        .glass-btn {
+            background: var(--glass-btn-bg); border: 1px solid var(--glass-border);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+        .glass-btn:hover {
+            background: rgba(255, 255, 255, 0.15); transform: translateY(-3px) scale(1.03);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+        }
+        
+        /* --- Parallax Wrapper --- */
+        .parallax-wrapper {
+            position: relative;
+            z-index: 1;
+            /* This single element provides the fixed background for all sections within it */
+            background-image: url('/static/background.jpg');
+            background-attachment: fixed; background-position: center;
+            background-repeat: no-repeat; background-size: cover;
+        }
+        
+        /* --- Hero Section --- */
+        .hero-section {
+            display: flex; align-items: center; justify-content: center;
+            min-height: 100vh; padding: var(--header-height) 2rem 2rem;
+        }
+        .hero-content {
+            display: flex; flex-direction: column; align-items: center; text-align: center;
+            /* UPDATED: margin-bottom moves the content block up from the viewport center */
+            margin-bottom: 10vh; 
+        }
+        .hero-content h1, .hero-content p, .hero-content .hero-btn {
+            opacity: 0; animation: fadeInUp 0.8s ease-out forwards;
+        }
+        .hero-content h1 {
+            font-size: 4.5rem; font-weight: 600; max-width: 900px; line-height: 1.15;
+            margin-bottom: 1.5rem; animation-delay: 0.2s; text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+        }
+        .hero-content p {
+            font-size: 1.25rem; font-weight: 400; max-width: 700px;
+            color: var(--text-secondary); line-height: 1.6;
+            margin-bottom: 3rem; animation-delay: 0.4s; text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+        }
+        .hero-content .hero-btn {
+            padding: 1rem 2.5rem; font-size: 1.1rem;
+            font-weight: 500; animation-delay: 0.6s;
+        }
+        
+        /* --- NEW: Features Section --- */
+        .features-section {
+            padding: 8rem 2rem;
+            color: var(--text-primary);
+        }
+        .features-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 8rem; /* Space between feature items */
+        }
+        .feature-item {
+            display: flex;
+            align-items: center;
+            gap: 4rem;
+        }
+        .feature-icon {
+            flex-shrink: 0;
+            background: rgba(15, 23, 42, 0.5);
+            padding: 1.5rem;
+            border-radius: 50%;
+            border: 1px solid var(--glass-border);
+        }
+        .feature-icon svg {
+            width: 48px;
+            height: 48px;
+            display: block;
+        }
+        .feature-text h3 {
+            font-size: 2rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+        .feature-text p {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+            line-height: 1.7;
+            max-width: 500px;
+        }
+        .feature-item.align-right {
+            flex-direction: row-reverse;
+        }
+        
+        /* --- NEW: Quote Section --- */
+        .quote-container {
+            text-align: center;
+            padding: 4rem 0;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .quote-container blockquote {
+            font-size: 2.25rem;
+            font-weight: 600;
+            line-height: 1.3;
+            margin-bottom: 1.5rem;
+            position: relative;
+            padding: 0 1rem;
+        }
+        .quote-container blockquote::before {
+            content: '“';
+            position: absolute;
+            left: -1rem;
+            top: -1.5rem;
+            font-size: 6rem;
+            color: var(--accent-color);
+            opacity: 0.2;
+            font-family: serif;
+        }
+        .quote-container .author {
+            font-style: italic;
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+        }
+        .quote-container p {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+            line-height: 1.7;
+        }
+
+        /* --- NEW: Scroll Animation Classes --- */
+        .hidden-on-scroll {
+            opacity: 0;
+            transition: opacity 1s ease-out, transform 1s ease-out;
+        }
+        .hidden-on-scroll.from-left { transform: translateX(-50px); }
+        .hidden-on-scroll.from-right { transform: translateX(50px); }
+        .hidden-on-scroll.from-bottom { transform: translateY(50px); }
+        .show {
+            opacity: 1;
+            transform: translateX(0) translateY(0);
+        }
+        
+        /* --- Fallback Content Section --- */
+        .content-section { padding: 6rem 2rem; background-color: var(--bg-solid); }
+
+        /* --- Mobile Navigation & Responsive --- */
+        .mobile-nav-toggle { display: none; background: none; border: none; cursor: pointer; z-index: 1001; }
+        .hamburger { display: block; position: relative; width: 24px; height: 2px; background-color: var(--text-primary); transition: all 0.3s ease-in-out; }
+        .hamburger::before, .hamburger::after { content: ''; position: absolute; width: 24px; height: 2px; background-color: var(--text-primary); transition: all 0.3s ease-in-out; }
+        .hamburger::before { top: -8px; } .hamburger::after { top: 8px; }
+        .mobile-nav {
+            display: none; position: absolute; top: 100%; left: 0; right: 0;
+            flex-direction: column; align-items: center; gap: 2rem; padding: 2rem;
+            background: var(--navbar-bg); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--glass-border); z-index: 999;
+        }
+        .mobile-nav.active { display: flex; }
+        .mobile-nav-toggle.active .hamburger { background-color: transparent; }
+        .mobile-nav-toggle.active .hamburger::before { transform: translateY(8px) rotate(45deg); }
+        .mobile-nav-toggle.active .hamburger::after { transform: translateY(-8px) rotate(-45deg); }
+
+        @media (max-width: 768px) {
+            :root { --header-height: 70px; }
+            .navbar-content { padding: 0 1rem; }
+            .desktop-nav, .header-actions .glass-btn { display: none; }
+            .mobile-nav-toggle { display: block; }
+            
+            .hero-content h1 { font-size: 2.75rem; }
+            .hero-content p { font-size: 1.1rem; }
+            
+            .features-section { padding: 4rem 1rem; }
+            .features-container { gap: 4rem; }
+            .feature-item, .feature-item.align-right { flex-direction: column; text-align: center; gap: 2rem; }
+            .quote-container blockquote { font-size: 1.75rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="navbar-content">
+            <a href="/" class="logo">
+                <img src="/static/logo.png" alt="Thinking Machines Logo">
+                <span>Thinking Machines</span>
+            </a>
+            <nav class="desktop-nav">
+                <a href="/how-to">How it Works</a>
+                <a href="/learn">Learn</a>
+            </nav>
+            <div class="header-actions">
+                <a href="/create" class="btn glass-btn">Start Building</a>
+                <button class="mobile-nav-toggle" aria-label="Toggle navigation">
+                    <span class="hamburger"></span>
+                </button>
+            </div>
+        </div>
+        <nav class="mobile-nav">
+            <a href="/how-to">How it Works</a>
+            <a href="/learn">Learn</a>
+        </nav>
+    </header>
+
+    <main>
+        <div class="parallax-wrapper">
+            <section class="hero-section">
+                <div class="hero-content">
+                    <h1>Build Better Models Faster</h1>
+                    <p>
+                        AI simplified for visual thinkers, students and enthusiasts.<br>
+                        Your vision, your tools - working together to shape what's next.
+                    </p>
+                    <a href="/create" class="btn glass-btn hero-btn">Start Building your AI network</a>
+                </div>
+            </section>
+
+            <section class="features-section">
+                <div class="features-container">
+
+                    <div class="quote-container hidden-on-scroll from-bottom">
+                        <blockquote>An idiot admires complexity, a genius admires simplicity</blockquote>
+                        <div class="author">- Terry A Davis</div>
+                        <p>Taking the words of god's choosen programmer to heart, we attempt to remove the complexity of designing and architecting an AI model, providing a clean and intiutive canvas for your ideas. Focus on your model's logic, not boilerplate code.</p>
+                    </div>
+                    
+                </div>
+            </section>
+        </div>
+        
+        <!-- You can add more non-parallax sections here -->
+        <!-- <section class="content-section"> ... </section> -->
+        
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Mobile Nav Toggle
+            const mobileNavToggle = document.querySelector('.mobile-nav-toggle');
+            const mobileNav = document.querySelector('.mobile-nav');
+            mobileNavToggle.addEventListener('click', function() {
+                mobileNavToggle.classList.toggle('active');
+                mobileNav.classList.toggle('active');
+            });
+
+            // Scroll Animations
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach((entry) => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('show');
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, {
+                threshold: 0.15, // Trigger when 15% of the element is visible
+            });
+
+            const hiddenElements = document.querySelectorAll('.hidden-on-scroll');
+            hiddenElements.forEach((el) => observer.observe(el));
+        });
+    </script>
+</body>
+</html>

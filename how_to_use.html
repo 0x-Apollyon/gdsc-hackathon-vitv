@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thinking Machines: Learn how to use</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg-solid: #08141E;
+            --navbar-bg: rgba(15, 23, 42, 0.75);
+            --text-primary: #f8fafc;
+            --text-secondary: #cbd5e1;
+            
+            /* --- FINAL: Refined Liquid Glass & Animation --- */
+            --liquid-glass-bg: radial-gradient(circle at 100% 0%, rgba(56, 189, 248, 0.1), transparent 50%),
+                               rgba(15, 23, 42, 0.6);
+            --liquid-glass-border: rgba(255, 255, 255, 0.2);
+            --soft-glow-shadow: 0 16px 48px rgba(0, 0, 0, 0.35);
+            --animation-timing: cubic-bezier(0.25, 0.46, 0.45, 0.94); /* Classic ease-out */
+
+            --glass-btn-bg: rgba(30, 41, 59, 0.5);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --accent-color: #38bdf8;
+            --font-family: 'Inter', sans-serif;
+            --header-height: 80px;
+        }
+
+        /* --- Base & Reset --- */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: var(--font-family);
+            background-color: var(--bg-solid);
+            color: var(--text-primary);
+            overflow-x: hidden;
+        }
+        a { color: inherit; text-decoration: none !important; }
+        a:hover, a:focus, a:active, a:visited { text-decoration: none !important; }
+        
+        /* --- IMPROVED Navbar & Buttons (from second page) --- */
+        header {
+            position: sticky; top: 0; width: 100%; z-index: 1000;
+            background: var(--navbar-bg); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--glass-border); height: var(--header-height);
+            display: flex; align-items: center;
+        }
+        .navbar-content {
+            display: flex; justify-content: space-between; align-items: center;
+            width: 100%; max-width: 1440px; margin: 0 auto; padding: 0 2rem;
+        }
+        .logo { display: flex; align-items: center; gap: 0.75rem; font-weight: 500; font-size: 1.1rem; }
+        .logo img { height: 50px; width: auto; }
+        .desktop-nav { display: flex; gap: 2.5rem; }
+        .desktop-nav a { color: var(--text-secondary); font-weight: 500; transition: all 0.3s ease; }
+        .desktop-nav a:hover { color: var(--text-primary); transform: translateY(-2px); }
+        .header-actions { display: flex; align-items: center; gap: 1rem; }
+        .btn {
+            display: inline-block; padding: 0.75rem 1.75rem; border-radius: 50px;
+            font-weight: 500; white-space: nowrap; transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            color: var(--text-primary);
+        }
+        .glass-btn {
+            background: var(--glass-btn-bg); border: 1px solid var(--glass-border);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+        .glass-btn:hover {
+            background: rgba(255, 255, 255, 0.15); transform: translateY(-3px) scale(1.03);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+        }
+
+        /* --- Parallax Wrapper --- */
+        .parallax-wrapper {
+            position: relative; z-index: 2;
+            background-image: url('/static/background2.jpg');
+            background-attachment: fixed; background-position: center;
+            background-repeat: no-repeat; background-size: cover;
+        }
+        .parallax-wrapper::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: rgba(8, 20, 30, 0.4);
+            z-index: -1;
+        }
+        
+        /* --- Hero Section --- */
+        .page-hero-section { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 90vh; text-align: center; padding: var(--header-height) 2rem 2rem; }
+        .page-hero-content h1 { font-size: 3.5rem; font-weight: 600; margin-bottom: 1.5rem; text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5); }
+        .page-hero-content p { font-size: 1.25rem; max-width: 700px; color: var(--text-secondary); line-height: 1.6; text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5); }
+
+        /* --- REVAMPED: Timeline Section --- */
+        .timeline-section {
+            position: relative;
+            padding: 8rem 2rem;
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+        .timeline-section::before { /* The static center line */
+            content: ''; position: absolute; left: 50%; top: 0; bottom: 0;
+            transform: translateX(-50%); width: 2px;
+            background: linear-gradient(to bottom, transparent, rgba(255, 255, 255, 0.2), transparent);
+        }
+
+        /* --- REVAMPED: Elegant Progress Bar --- */
+        .timeline-progress {
+            position: sticky; /* Sticks to the viewport within its parent's bounds */
+            top: calc(50% - 100px);
+            left: 50%;
+            transform: translateX(-50%);
+            height: 200px;
+            width: 2px;
+        }
+        .progress-indicator {
+            position: absolute;
+            left: 50%;
+            width: 16px; height: 16px;
+            border-radius: 50%;
+            background-color: var(--accent-color);
+            border: 3px solid var(--bg-solid);
+            transform: translate(-50%, -50%); /* Center the dot */
+            box-shadow: 0 0 12px 2px var(--accent-color);
+        }
+
+        .timeline-item {
+            position: relative; 
+            width: 50%; 
+            padding: 0 50px; 
+            margin-bottom: 120px;
+        }
+        .timeline-item:nth-child(even) { margin-left: 50%; } /* Push right-side items over */
+        
+        /* --- FINAL Liquid Glass Card Style --- */
+        .timeline-content {
+            padding: 3rem;
+            min-height: 220px;
+            background: var(--liquid-glass-bg);
+            border: 1px solid var(--liquid-glass-border);
+            border-radius: 24px; /* Softer, rounded corners */
+            backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            box-shadow: var(--soft-glow-shadow);
+            
+            /* Animation state */
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.8s var(--animation-timing), transform 0.8s var(--animation-timing);
+            
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        .timeline-item:nth-child(odd) .timeline-content { text-align: right; }
+        .timeline-item:nth-child(even) .timeline-content { text-align: left; }
+        
+        /* The trigger class added by JS */
+        .timeline-content.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        .timeline-icon {
+            width: 48px;
+            height: 48px;
+            margin-bottom: 0.5rem;
+            opacity: 0.9;
+        }
+        .timeline-item:nth-child(odd) .timeline-icon { align-self: flex-end; }
+        .timeline-item:nth-child(even) .timeline-icon { align-self: flex-start; }
+        
+        .timeline-content h4 { font-size: 1.5rem; color: var(--accent-color); font-weight: 500; margin-bottom: 0.75rem; }
+        .timeline-content h5 { font-size: 2rem; font-weight: 600; color: var(--text-primary); margin-bottom: 1rem; }
+        .timeline-content p { font-size: 1.1rem; line-height: 1.7; color: var(--text-secondary); }
+
+        /* --- IMPROVED Mobile Navigation (from second page) --- */
+        .mobile-nav-toggle { display: none; background: none; border: none; cursor: pointer; z-index: 1001; }
+        .hamburger { display: block; position: relative; width: 24px; height: 2px; background-color: var(--text-primary); transition: all 0.3s ease-in-out; }
+        .hamburger::before, .hamburger::after { content: ''; position: absolute; width: 24px; height: 2px; background-color: var(--text-primary); transition: all 0.3s ease-in-out; }
+        .hamburger::before { top: -8px; } .hamburger::after { top: 8px; }
+        .mobile-nav {
+            display: none; position: absolute; top: 100%; left: 0; right: 0;
+            flex-direction: column; align-items: center; gap: 2rem; padding: 2rem;
+            background: var(--navbar-bg); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--glass-border); z-index: 999;
+        }
+        .mobile-nav.active { display: flex; }
+        .mobile-nav-toggle.active .hamburger { background-color: transparent; }
+        .mobile-nav-toggle.active .hamburger::before { transform: translateY(8px) rotate(45deg); }
+        .mobile-nav-toggle.active .hamburger::after { transform: translateY(-8px) rotate(-45deg); }
+
+        /* --- Responsive Design --- */
+        @media (max-width: 768px) {
+            :root { --header-height: 70px; }
+            .navbar-content { padding: 0 1rem; }
+            .desktop-nav, .header-actions .glass-btn { display: none; }
+            .mobile-nav-toggle { display: block; }
+            
+            .timeline-section { max-width: 100%; padding: 4rem 1rem; }
+            .timeline-section::before, .timeline-progress { left: 20px; }
+            .timeline-item, .timeline-item:nth-child(even) { 
+                width: 100%; 
+                margin-left: 0; 
+                padding-left: 60px; 
+                padding-right: 20px;
+                margin-bottom: 80px;
+            }
+            .timeline-content {
+                padding: 2rem;
+                min-height: 180px;
+            }
+            .timeline-item:nth-child(odd) .timeline-content, 
+            .timeline-item:nth-child(even) .timeline-content { text-align: left; }
+            .timeline-item:nth-child(odd) .timeline-icon, 
+            .timeline-item:nth-child(even) .timeline-icon { align-self: flex-start; }
+            
+            .page-hero-content h1 { font-size: 2.75rem; }
+            .page-hero-content p { font-size: 1.1rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="navbar-content">
+            <a href="/" class="logo">
+                <img src="/static/logo.png" alt="Thinking Machines Logo">
+                <span>Thinking Machines</span>
+            </a>
+            <nav class="desktop-nav">
+                <a href="/how-to">How it Works</a>
+                <a href="/learn">Learn</a>
+            </nav>
+            <div class="header-actions">
+                <a href="/create" class="btn glass-btn">Start Building</a>
+                <button class="mobile-nav-toggle" aria-label="Toggle navigation">
+                    <span class="hamburger"></span>
+                </button>
+            </div>
+        </div>
+        <nav class="mobile-nav">
+            <a href="/how-to">How it Works</a>
+            <a href="/learn">Learn</a>
+        </nav>
+    </header>
+
+    <main>
+        <div class="parallax-wrapper">
+            <section class="page-hero-section">
+                <div class="page-hero-content">
+                    <h1>Using Thinking Machines</h1>
+                    <p>
+                        Charting your way from a concept to a working model. Follow these steps and you will be there in no time.
+                    </p>
+                </div>
+            </section>
+            
+            <div id="timeline-section-wrapper">
+                <div class="timeline-progress">
+                    <div class="progress-indicator" id="progress-indicator"></div>
+                </div>
+                <div class="timeline-section">
+                    <div class="timeline-item">
+                        <div class="timeline-content">
+                            <svg class="timeline-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="3" width="7" height="7"/>
+                                <rect x="14" y="3" width="7" height="7"/>
+                                <rect x="14" y="14" width="7" height="7"/>
+                                <rect x="3" y="14" width="7" height="7"/>
+                            </svg>
+                            <h5>Choose Components</h5>
+                            <p>Ready to create something amazing? Choose your layers, datasets, and pre-built AI modules. Think of it like assembling your dream toolkit.</p>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-content">
+                            <svg class="timeline-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+                                <path d="M2 17l10 5 10-5"/>
+                                <path d="M2 12l10 5 10-5"/>
+                            </svg>
+                            <h5>Drag and Drop</h5>
+                            <p>Let your creativity flow! Visually arrange your components on the canvas. No code needed—just pure design freedom.</p>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-content">
+                            <svg class="timeline-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/>
+                                <circle cx="12" cy="12" r="3"/>
+                            </svg>
+                            <h5>Component Modification</h5>
+                            <p>Tweak and alter the specifications of each component you have choosen, be it the number of neurons, activation function or anything else. Thinking Machines allows for full customization</p>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-content">
+                            <svg class="timeline-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                <polyline points="17,8 12,3 7,8"/>
+                                <line x1="12" y1="3" x2="12" y2="15"/>
+                            </svg>
+                            <h5>Model Preview and Export</h5>
+                            <p>Preview your model once before exporting, while exporting select the specifications which suit you best, GPU or no-GPU, edge devices or dev environment, it doesnt matter.</p>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-content">
+                            <svg class="timeline-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M9 11H5a2 2 0 0 0-2 2v3a2 2 0 0 0 2 2h4"/>
+                                <path d="M15 13h4a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2h-4"/>
+                                <path d="M12 2v20"/>
+                                <circle cx="12" cy="6" r="3"/>
+                                <circle cx="12" cy="18" r="3"/>
+                            </svg>
+                            <h5>Test and Iterate</h5>
+                            <p>Test the model you just built by running your code. Not satisfied ? Do some more tweaks until you have an AI models which matches your standards.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <section class="page-hero-section" style="min-height: 80vh;">
+                <div class="page-hero-content">
+                    <h1>The Future is Visual</h1>
+                    <p>Join us on this journey as we continue to simplify AI and empower developers everywhere.</p>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // IMPROVED Mobile Nav Toggle (from second page)
+            const mobileNavToggle = document.querySelector('.mobile-nav-toggle');
+            const mobileNav = document.querySelector('.mobile-nav');
+            if (mobileNavToggle && mobileNav) {
+                mobileNavToggle.addEventListener('click', function() {
+                    mobileNavToggle.classList.toggle('active');
+                    mobileNav.classList.toggle('active');
+                });
+            }
+
+            // --- Elegant Scroll Animations ---
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('show');
+                    }
+                });
+            }, {
+                threshold: 0.5 // Trigger when 50% of the element is visible
+            });
+
+            const timelineContents = document.querySelectorAll('.timeline-content');
+            timelineContents.forEach(content => observer.observe(content));
+
+            // --- Dynamic Progress Indicator Logic ---
+            const indicator = document.getElementById('progress-indicator');
+            const timelineWrapper = document.getElementById('timeline-section-wrapper');
+
+            if (indicator && timelineWrapper) {
+                window.addEventListener('scroll', () => {
+                    const wrapperRect = timelineWrapper.getBoundingClientRect();
+                    const wrapperTop = wrapperRect.top;
+                    const wrapperHeight = wrapperRect.height;
+                    const viewportHeight = window.innerHeight;
+
+                    // Calculate progress (0 to 1) within the timeline wrapper
+                    // Progress starts when the top of the wrapper hits the center of the viewport
+                    // Progress ends when the bottom of the wrapper hits the center of the viewport
+                    const progress = (viewportHeight / 2 - wrapperTop) / (wrapperHeight - viewportHeight);
+                    const clampedProgress = Math.max(0, Math.min(1, progress));
+
+                    // The indicator moves within its own 200px sticky container
+                    const indicatorMaxTravel = 200; 
+                    indicator.style.top = `${clampedProgress * indicatorMaxTravel}px`;
+                });
+            }
+        });
+    </script>
+</body>
+</html>
