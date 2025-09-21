@@ -1,0 +1,1552 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thinking Machines: MLP {{ model_name }}</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jsPlumb/2.15.6/js/jsplumb.min.js"></script>
+
+    <style>
+        :root {
+            --bg-solid: #f9fafb;
+            --navbar-bg: #ffffff;
+            --text-primary: #1f2937;
+            --text-secondary: #6b7280;
+            --text-muted: #9ca3af;
+            --glass-btn-bg: #ffffff;
+            --glass-border: rgba(0, 0, 0, 0.1);
+            --accent-color: #3b82f6;
+            --accent-hover: #2563eb;
+            --danger-color: #ef4444;
+            --danger-hover: #dc2626;
+            --danger-bg: rgba(239, 68, 68, 0.1);
+            --font-family: 'Inter', sans-serif;
+            --header-height: 64px;
+            --panel-bg: #ffffff;
+            --canvas-bg: #f1f5f9;
+            --component-bg: #ffffff;
+            --component-border: rgba(0, 0, 0, 0.1);
+            --component-hover-border: #3b82f6;
+            --action-bg: #f8fafc;
+            --layer-visual-bg: rgba(0, 0, 0, 0.02);
+            --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 8px 16px rgba(0, 0, 0, 0.1);
+            --neuron-glow: #60a5fa;
+            --input-bg: #f9fafb;
+            --input-border: #d1d5db;
+            --code-bg: #f3f4f6;
+            --code-text: #111827;
+        }
+
+        [data-theme="dark"] {
+            --bg-solid: #111827;
+            --navbar-bg: #1f2937;
+            --text-primary: #f9fafb;
+            --text-secondary: #d1d5db;
+            --text-muted: #9ca3af;
+            --glass-btn-bg: rgba(55, 65, 81, 0.5);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --danger-color: #f87171;
+            --danger-hover: #fca5a5;
+            --danger-bg: rgba(248, 113, 113, 0.1);
+            --panel-bg: #1f2937;
+            --canvas-bg: #1e293b;
+            --component-bg: rgba(55, 65, 81, 0.9);
+            --component-border: rgba(255, 255, 255, 0.1);
+            --component-hover-border: #60a5fa;
+            --action-bg: #1f2937;
+            --layer-visual-bg: rgba(255, 255, 255, 0.05);
+            --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.2);
+            --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.3);
+            --shadow-lg: 0 8px 16px rgba(0, 0, 0, 0.3);
+            --neuron-glow: #93c5fd;
+            --input-bg: #374151;
+            --input-border: #4b5563;
+            --code-bg: #222738;
+            --code-text: #e2e8f0;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: var(--font-family); background-color: var(--bg-solid);
+            color: var(--text-primary); overflow: hidden;
+            transition: background-color 0.3s ease, color 0.3s ease; -webkit-font-smoothing: antialiased;
+        }
+
+        header {
+            position: fixed; top: 0; width: 100%; z-index: 1000;
+            background: var(--navbar-bg); box-shadow: var(--shadow-sm); height: var(--header-height);
+            display: flex; align-items: center;
+        }
+
+        .navbar-content {
+            display: flex; justify-content: space-between; align-items: center;
+            width: 100%; max-width: 100%; margin: 0 auto; padding: 0 1.5rem;
+        }
+
+        .logo { display: flex; align-items: center; gap: 0.5rem; font-weight: 600; font-size: 1.25rem; }
+        .logo img { height: 50px; width: auto; }
+        .header-actions { display: flex; align-items: center; gap: 0.75rem; }
+
+        .btn {
+            padding: 0.5rem 1.25rem; border-radius: 8px; font-weight: 500;
+            transition: all 0.2s ease; color: var(--text-primary); cursor: pointer;
+            border: none; font-family: inherit; display: flex; align-items: center; gap: 0.5rem;
+        }
+
+        .glass-btn { background: var(--glass-btn-bg); border: 1px solid var(--glass-border); box-shadow: var(--shadow-sm); }
+        .glass-btn:hover { background: var(--accent-hover); color: #ffffff; transform: translateY(-2px); box-shadow: var(--shadow-md); }
+
+        .theme-toggle {
+            background: none; border: 1px solid var(--glass-border); padding: 0.5rem;
+            border-radius: 8px; cursor: pointer; transition: all 0.2s ease;
+        }
+        .theme-toggle:hover { background: var(--glass-btn-bg); border-color: var(--accent-color); }
+        [data-theme="dark"] .theme-toggle { color: var(--text-primary); }
+        .theme-icon { width: 18px; height: 18px; }
+
+        .main-container { display: flex; height: calc(100vh - var(--header-height)); margin-top: var(--header-height); }
+        .content-wrapper { display: flex; flex: 1; overflow: hidden; position: relative; }
+
+        .side-panel {
+            width: 300px; background: var(--panel-bg); border-right: 1px solid var(--glass-border);
+            overflow-y: auto; padding: 1.5rem; flex-shrink: 0; box-shadow: var(--shadow-sm); position: relative; z-index: 10;
+        }
+
+        .delete-zone-overlay {
+            position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+            background-color: var(--danger-bg); border: 2px dashed var(--danger-color);
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            color: var(--danger-color); font-weight: 600; z-index: 10;
+            opacity: 0; visibility: hidden; transition: opacity 0.3s ease, visibility 0.3s ease;
+            pointer-events: none;
+        }
+        .side-panel.delete-active .delete-zone-overlay { opacity: 1; visibility: visible; }
+        .delete-zone-overlay svg { width: 48px; height: 48px; margin-bottom: 1rem; }
+
+        .panel-section { margin-bottom: 2rem; }
+        .panel-title { font-size: 1.25rem; font-weight: 600; margin-bottom: 1rem; color: var(--text-primary); }
+
+        .component-item, .action-item {
+            display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem;
+            background: var(--component-bg); border: 1px solid var(--component-border);
+            border-radius: 8px; margin-bottom: 0.5rem; cursor: grab;
+            transition: all 0.2s ease; box-shadow: var(--shadow-sm);
+        }
+        .action-item { border-color: rgba(139, 92, 246, 0.3); }
+
+        .component-item:hover, .action-item:hover {
+            border-color: var(--component-hover-border); box-shadow: var(--shadow-md); transform: translateY(-2px);
+        }
+        .action-item:hover { border-color: rgba(139, 92, 246, 0.6); }
+
+        .component-item:active, .action-item:active { cursor: grabbing; transform: scale(0.98); }
+
+        .component-icon, .action-icon { width: 18px; height: 18px; color: var(--accent-color); flex-shrink: 0; }
+        .action-icon { color: #8b5cf6; }
+
+        .component-info h4, .action-info h4 { font-size: 0.875rem; font-weight: 500; color: var(--text-primary); margin-bottom: 0.25rem; }
+        .component-info p, .action-info p { font-size: 0.75rem; color: var(--text-muted); line-height: 1.5; }
+        
+        .canvas-container { flex: 1; display: flex; flex-direction: column; overflow: hidden; transition: width 0.3s ease-in-out; }
+        .content-wrapper.attributes-panel-visible .canvas-container { width: calc(100% - 320px); }
+        
+        .model-canvas-wrapper { height: 70%; position: relative; display: flex; flex-direction: column; }
+        .action-workflow { height: 30%; position: relative; display: flex; flex-direction: column; }
+        
+        .model-canvas { flex: 1; background: var(--canvas-bg); position: relative; overflow: hidden; cursor: grab; }
+        .model-canvas:active { cursor: grabbing; }
+
+        .canvas-title {
+            font-size: 1rem; font-weight: 600; color: var(--text-primary); padding: 1rem 1.25rem 0.75rem;
+            background: var(--canvas-bg); z-index: 1; flex-shrink: 0;
+        }
+        
+        .canvas {
+            width: 4000px; height: 4000px; position: relative;
+            background-image: radial-gradient(circle at center, rgba(59, 130, 246, 0.2) 1px, transparent 1px);
+            background-size: 40px 40px; transition: transform 0.1s ease;
+            transform-origin: 0 0;
+        }
+
+        .drop-zone {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            width: 350px; height: 180px; display: flex; flex-direction: column; align-items: center; justify-content: center;
+            color: var(--text-muted); font-size: 1rem; font-weight: 500; border: 2px dashed var(--glass-border);
+            border-radius: 12px; transition: all 0.2s ease;
+        }
+        .drop-zone.drag-over { background: rgba(59, 130, 246, 0.1); border-color: var(--accent-color); color: var(--accent-color); }
+        .drop-zone-icon { width: 32px; height: 32px; margin-bottom: 0.75rem; opacity: 0.7; }
+
+        .workflow-title { font-size: 1rem; font-weight: 600; color: var(--text-primary); flex-shrink: 0; padding: 1rem 1.25rem 0.75rem; background: var(--action-bg);}
+        .action-workflow { background: var(--action-bg); border-top: 1px solid var(--glass-border); }
+        .workflow-canvas-wrapper { flex: 1; position: relative; overflow: hidden; padding: 0 1.25rem 1.25rem; cursor: grab; }
+        .workflow-canvas-wrapper:active { cursor: grabbing; }
+        
+        .workflow-canvas {
+            width: 4000px; height: 4000px;
+            background-image: radial-gradient(circle at center, rgba(139, 92, 246, 0.2) 1px, transparent 1px);
+            background-size: 30px 30px; border-radius: 8px; position: relative;
+            color: var(--text-muted); font-size: 0.875rem; transition: transform 0.1s ease;
+            transform-origin: 0 0;
+        }
+        .workflow-placeholder { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); pointer-events: none; }
+        .workflow-canvas.drag-over { background: rgba(139, 92, 246, 0.1); color: #8b5cf6; }
+
+        .canvas-tools { position: absolute; top: 3.5rem; left: 1.25rem; display: flex; gap: 0.5rem; z-index: 100; }
+        .workflow-tools { position: absolute; top: 3.5rem; left: 1.25rem; display: flex; gap: 0.5rem; z-index: 100; }
+        
+        .tool-btn, .workflow-tool-btn {
+            width: 32px; height: 32px; background: var(--component-bg); border: 1px solid var(--component-border);
+            border-radius: 6px; display: flex; align-items: center; justify-content: center;
+            cursor: pointer; transition: all 0.2s ease; color: var(--text-secondary); position: relative;
+        }
+        .tool-btn:hover, .workflow-tool-btn:hover { border-color: var(--component-hover-border); color: var(--text-primary); transform: translateY(-2px); box-shadow: var(--shadow-md); }
+        .tool-btn svg, .workflow-tool-btn svg { width: 16px; height: 16px; }
+
+        .tooltip, .workflow-tooltip {
+            position: absolute; bottom: 120%; left: 50%; transform: translateX(-50%);
+            background-color: var(--text-primary); color: var(--navbar-bg); padding: 0.25rem 0.6rem;
+            border-radius: 6px; font-size: 0.75rem; font-weight: 500; white-space: nowrap;
+            opacity: 0; visibility: hidden; transition: opacity 0.2s ease, visibility 0.2s ease; pointer-events: none; z-index: 1000;
+        }
+        .tooltip::after, .workflow-tooltip::after {
+            content: ''; position: absolute; top: 100%; left: 50%; transform: translateX(-50%);
+            border-width: 5px; border-style: solid; border-color: var(--text-primary) transparent transparent transparent;
+        }
+        .tool-btn:hover .tooltip, .workflow-tool-btn:hover .workflow-tooltip { opacity: 1; visibility: visible; }
+        
+        .zoom-display {
+            position: absolute; bottom: 1rem; right: 1.25rem;
+            background: var(--component-bg); color: var(--text-secondary); padding: 4px 8px;
+            border-radius: 6px; font-size: 0.75rem; font-weight: 500; z-index: 100;
+            pointer-events: none; border: 1px solid var(--component-border); box-shadow: var(--shadow-sm);
+        }
+        [data-theme="dark"] .zoom-display { background-color: rgba(55, 65, 81, 0.8); backdrop-filter: blur(4px); }
+
+        .dropped-component, .dropped-action {
+            position: absolute; padding: 0.75rem; background: var(--component-bg); border: 1px solid var(--component-border);
+            border-radius: 8px; box-shadow: var(--shadow-md); cursor: move; transition: all 0.2s ease;
+            min-width: 200px; max-width: 240px;
+        }
+        .dropped-component.selected, .dropped-action.selected { border-color: var(--accent-color); box-shadow: 0 0 0 2px var(--accent-color), var(--shadow-lg); }
+        .dropped-action {
+            background: var(--action-bg); border-color: rgba(139, 92, 246, 0.3);
+            min-width: 160px; max-width: 180px; display: flex; flex-direction: column; align-items: flex-start; gap: 0.25rem; padding: 0.5rem;
+        }
+        .dropped-component:hover, .dropped-action:hover { border-color: var(--component-hover-border); box-shadow: var(--shadow-lg); }
+        .dropped-action:hover { border-color: rgba(139, 92, 246, 0.6); }
+        .dropped-action.selected { border-color: #8b5cf6; }
+
+        .dropped-component .component-header { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem; }
+        .dropped-component .component-title { font-size: 0.875rem; font-weight: 600; color: var(--text-primary); }
+        .dropped-action .action-header { display: flex; align-items: center; gap: 0.5rem; width: 100%; padding-bottom: 0.25rem; border-bottom: 1px solid var(--glass-border); margin-bottom: 0.25rem;}
+        .dropped-action .action-title { font-size: 0.875rem; font-weight: 600; }
+        .dropped-component .component-details, .dropped-action .action-details { font-size: 0.75rem; color: var(--text-secondary); line-height: 1.5; margin-top: 0.5rem; }
+        .dropped-action .action-details { margin-top: 0; }
+        
+        .edit-btn {
+            position: absolute; top: 4px; right: 4px;
+            width: 24px; height: 24px;
+            background-color: var(--component-bg);
+            border: 1px solid var(--component-border);
+            border-radius: 6px;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer;
+            opacity: 0; visibility: hidden;
+            transition: all 0.2s ease;
+            color: var(--text-secondary);
+        }
+        .dropped-component:hover .edit-btn, .dropped-action:hover .edit-btn,
+        .dropped-component.selected .edit-btn, .dropped-action.selected .edit-btn {
+            opacity: 1; visibility: visible;
+        }
+        .edit-btn:hover {
+            border-color: var(--accent-color);
+            background-color: var(--accent-color);
+            color: white;
+        }
+        .edit-btn svg { width: 14px; height: 14px; }
+
+        .layer-visual {
+            display: flex; flex-direction: column; align-items: center; gap: 6px; margin: 0.5rem 0; padding: 0.75rem;
+            background: var(--layer-visual-bg); border-radius: 8px; border: 1px solid var(--glass-border);
+        }
+        
+        .neuron {
+            width: 12px; height: 12px; border-radius: 50%; background-color: transparent;
+            border: 1.5px solid rgba(59, 130, 246, 0.5); transition: all 0.3s ease;
+        }
+        .neuron:hover { transform: scale(1.15); background-color: var(--neuron-glow); border-color: var(--neuron-glow); box-shadow: 0 0 6px var(--neuron-glow); }
+        .neuron-more { font-size: 0.7rem; color: var(--text-muted); font-style: italic; letter-spacing: 0.5px; }
+
+        .theme-icon.hidden { display: none; }
+        .side-panel::-webkit-scrollbar { width: 6px; height: 6px; }
+        .side-panel::-webkit-scrollbar-track { background: transparent; }
+        .side-panel::-webkit-scrollbar-thumb { background: var(--glass-border); border-radius: 3px; }
+
+        .jsplumb-connector path { stroke: var(--accent-color); stroke-width: 2; transition: stroke 0.2s ease; }
+        .connection-selected path { stroke: var(--danger-color); stroke-dasharray: 5 5; }
+        [data-theme="dark"] .jsplumb-connector path { stroke: #60a5fa; }
+        
+        .confirmation-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5); backdrop-filter: blur(4px);
+            display: none; align-items: center; justify-content: center; z-index: 2000;
+        }
+        .confirmation-box {
+            background: var(--panel-bg); padding: 1.5rem; border-radius: 12px;
+            box-shadow: var(--shadow-lg); text-align: center; max-width: 320px;
+        }
+        .confirmation-box h3 { color: var(--text-primary); margin-bottom: 0.5rem; }
+        .confirmation-box p { color: var(--text-secondary); margin-bottom: 1.5rem; font-size: 0.875rem; }
+        .confirmation-actions { display: flex; gap: 0.75rem; justify-content: center; }
+        .confirm-btn-delete { background: var(--danger-color); color: #fff; }
+        .confirm-btn-delete:hover { background: var(--danger-hover); }
+        .confirm-btn-cancel { background: var(--component-bg); border: 1px solid var(--component-border); }
+        
+        /* Attributes Panel */
+        .attributes-panel {
+            position: absolute; right: 0; top: 0; bottom: 0;
+            width: 320px; background-color: var(--panel-bg);
+            border-left: 1px solid var(--glass-border);
+            box-shadow: var(--shadow-lg);
+            transform: translateX(100%); transition: transform 0.3s ease-in-out;
+            z-index: 500; overflow-y: auto;
+        }
+        .attributes-panel.visible { transform: translateX(0); }
+        .attributes-panel-header {
+            padding: 1rem 1.5rem; border-bottom: 1px solid var(--glass-border);
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .attributes-panel-header h3 { font-size: 1.1rem; }
+        .attributes-panel-close {
+            background: none; border: none; cursor: pointer; color: var(--text-muted);
+            padding: 0.25rem;
+        }
+        .attributes-panel-close:hover { color: var(--text-primary); }
+        .attributes-panel-close svg { width: 20px; height: 20px; }
+        .attributes-panel-content { padding: 1.5rem; }
+        .attr-section { margin-bottom: 1.5rem; }
+        .attr-section h4 { font-size: 0.875rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; }
+        .form-group { margin-bottom: 1rem; }
+        .form-group label { display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.5rem; }
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%; padding: 0.5rem 0.75rem; border-radius: 6px;
+            border: 1px solid var(--input-border); background-color: var(--input-bg);
+            color: var(--text-primary); font-family: inherit; font-size: 0.875rem;
+        }
+        .form-group textarea { min-height: 80px; resize: vertical; }
+        .form-group textarea.code-input {
+            font-family: Consolas, 'Courier New', monospace;
+            background-color: var(--code-bg);
+            color: var(--code-text);
+            min-height: 150px;
+        }
+        .checkbox-group label, .radio-group label { display: flex; align-items: center; gap: 0.5rem; font-weight: 400; margin-bottom: 0.5rem; }
+        
+        /* UPDATED: Professional Analytics Attributes Styles */
+        .form-group.switch-group {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0;
+            padding: 0.25rem 0;
+        }
+        .form-group.switch-group label:first-of-type {
+            margin-bottom: 0;
+        }
+        .attr-section .segmented-control {
+            display: flex;
+            width: 100%;
+            border: 1px solid var(--input-border);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .attr-section .segmented-control label {
+            flex: 1;
+            text-align: center;
+            padding: 0.5rem;
+            cursor: pointer;
+            background-color: var(--component-bg);
+            color: var(--text-secondary);
+            transition: background-color 0.2s ease, color 0.2s ease;
+            font-size: 0.8rem;
+            font-weight: 500;
+            margin: 0;
+        }
+        .attr-section .segmented-control label:not(:last-child) {
+            border-right: 1px solid var(--input-border);
+        }
+        .attr-section .segmented-control input[type="radio"] {
+            display: none;
+        }
+        .attr-section .segmented-control input[type="radio"]:checked + label {
+            background-color: var(--accent-color);
+            color: white;
+            box-shadow: inset 0 1px 2px rgba(0,0,0,0.1);
+        }
+
+        /* Export Modal Styles */
+        .export-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5);
+            backdrop-filter: blur(4px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 3000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+
+        .export-overlay.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .export-modal {
+            background: var(--panel-bg);
+            border-radius: 12px;
+            box-shadow: var(--shadow-lg);
+            width: 100%;
+            max-width: 480px;
+            transform: scale(0.95);
+            transition: transform 0.3s ease;
+        }
+
+        .export-overlay.visible .export-modal {
+            transform: scale(1);
+        }
+
+        .export-modal-header {
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid var(--glass-border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .export-modal-header h3 {
+            font-size: 1.1rem;
+            color: var(--text-primary);
+        }
+
+        .export-modal-content {
+            padding: 1.5rem;
+            min-height: 220px;
+        }
+
+        .validation-intro {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+
+        .validation-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .validation-list li {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 0.875rem;
+        }
+
+        .val-icon {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: var(--layer-visual-bg);
+        }
+
+        .val-icon::before {
+            content: '';
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: var(--text-muted);
+        }
+
+        li.success .val-icon::before { background-color: #22c55e; }
+        li.error .val-icon::before { background-color: var(--danger-color); }
+        .val-text { flex: 1; color: var(--text-secondary); }
+        li.success .val-text { color: var(--text-primary); }
+        li.error .val-text { color: var(--danger-color); font-weight: 500; }
+
+        .validation-error-message {
+            margin-top: 1.5rem;
+            padding: 0.75rem;
+            background-color: var(--danger-bg);
+            color: var(--danger-color);
+            border-radius: 8px;
+            text-align: center;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        .export-options {
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--glass-border);
+        }
+
+        .export-options h4 {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .toggle-group {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .switch { position: relative; display: inline-block; width: 44px; height: 24px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: var(--input-border); transition: .4s; }
+        .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: .4s; }
+        input:checked + .slider { background-color: var(--accent-color); }
+        input:checked + .slider:before { transform: translateX(20px); }
+        .slider.round { border-radius: 34px; }
+        .slider.round:before { border-radius: 50%; }
+
+        .export-modal-footer {
+            padding: 1rem 1.5rem;
+            border-top: 1px solid var(--glass-border);
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.75rem;
+        }
+
+        #generateCodeBtn { background-color: var(--accent-color); color: white; }
+        #generateCodeBtn:hover { background-color: var(--accent-hover); }
+        #generateCodeBtn:disabled { background-color: var(--text-muted); cursor: not-allowed; }
+
+        #downloadCodeBtn { background-color: #22c55e; color: white; }
+
+        /* NEW/UPDATED Professional Spinner */
+        #export-loading-step {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            height: 100%;
+            padding: 2rem 0;
+        }
+        .spinner-container {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 1.5rem;
+        }
+        .spinner-dot {
+            width: 12px;
+            height: 12px;
+            background-color: var(--accent-color);
+            border-radius: 50%;
+            animation: pulse 1.4s infinite ease-in-out both;
+        }
+        .spinner-dot:nth-child(1) { animation-delay: -0.32s; }
+        .spinner-dot:nth-child(2) { animation-delay: -0.16s; }
+        @keyframes pulse {
+            0%, 80%, 100% {
+                transform: scale(0.6);
+                opacity: 0.5;
+            } 40% {
+                transform: scale(1.0);
+                opacity: 1;
+            }
+        }
+        #export-loading-step h4 { font-size: 1.1rem; margin-bottom: 0.5rem; color: var(--text-primary); }
+        #export-loading-step p { color: var(--text-secondary); }
+
+        .success-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background-color: rgba(34, 197, 94, 0.1);
+            color: #22c55e;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1rem;
+        }
+        .success-icon svg { width: 32px; height: 32px; }
+        #export-download-step h4 { font-size: 1.1rem; margin-bottom: 0.5rem; color: var(--text-primary); }
+        #export-download-step p { color: var(--text-secondary); }
+        .logo-light,
+        [data-theme="dark"] .logo-dark {
+            display: block;
+        }
+
+        .logo-dark,
+        [data-theme="dark"] .logo-light {
+            display: none;
+        }
+    </style>
+</head>
+<body data-theme="light">
+    <header>
+        <div class="navbar-content">
+            <a href="/" style="color: inherit; text-decoration: none;">
+            <div class="logo">
+                <img src="/static/logo.png" alt="Thinking Machines Logo" class="logo-dark">
+                <img src="/static/logo2.png" alt="Thinking Machines Logo" class="logo-light">
+                <span>MLP: {{ model_name }}</span>
+            </div>
+            </a>
+            <div class="header-actions">
+                <button class="btn glass-btn" id="exportBtn">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17,8 12,3 7,8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                    Export Model
+                </button>
+                <button class="theme-toggle" id="themeToggle">
+                    <svg class="theme-icon sun-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+                    <svg class="theme-icon moon-icon hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <div class="main-container">
+        <div class="content-wrapper" id="contentWrapper">
+            <div class="side-panel" id="sidePanel">
+                <div class="delete-zone-overlay">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
+                    <span>Drop to Delete</span>
+                </div>
+                <!-- Component & Action Items -->
+                <div class="panel-section">
+                    <h2 class="panel-title">Components</h2>
+                    <div class="component-item" draggable="true" data-component-type="data-input"><svg class="component-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14a9 3 0 0 0 18 0V5"/><path d="M3 12a9 3 0 0 0 18 0"/></svg><div class="component-info"><h4>Data Input</h4><p>Dataset connection point</p></div></div>
+                    <div class="component-item" draggable="true" data-component-type="input-layer"><svg class="component-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg><div class="component-info"><h4>Input Layer</h4><p>Receives data features</p></div></div>
+                    <div class="component-item" draggable="true" data-component-type="hidden-layer"><svg class="component-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-1.414-.586H13"/><path d="m21 9-3.086 3.086a2 2 0 0 1-1.414.586H13"/></svg><div class="component-info"><h4>Hidden Layer</h4><p>Processing layer with neurons</p></div></div>
+                    <div class="component-item" draggable="true" data-component-type="output-layer"><svg class="component-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="12" y1="18" x2="12" y2="12"/><polyline points="9,15 12,18 15,15"/></svg><div class="component-info"><h4>Output Layer</h4><p>Final prediction layer</p></div></div>
+                </div>
+                <div class="panel-section">
+                    <h2 class="panel-title">Actions</h2>
+                    <div class="action-item" draggable="true" data-action-type="train"><svg class="action-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg><div class="action-info"><h4>Train</h4><p>Train the model</p></div></div>
+                    <div class="action-item" draggable="true" data-action-type="test"><svg class="action-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 12l2 2 4-4"/><path d="M21 12c-1 0-3-1-3-3s2-3 3-3 3 1 3 3-2 3-3 3"/><path d="M3 12c1 0 3-1 3-3s-2-3-3-3-3 1-3 3 2 3 3 3"/></svg><div class="action-info"><h4>Test</h4><p>Evaluate model performance</p></div></div>
+                    <div class="action-item" draggable="true" data-action-type="analytics"><svg class="action-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg><div class="action-info"><h4>Display Analytics</h4><p>Show model metrics</p></div></div>
+                    <div class="action-item" draggable="true" data-action-type="user-input"><svg class="action-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><div class="action-info"><h4>Allow User Input</h4><p>Accept user data</p></div></div>
+                    <div class="action-item" draggable="true" data-action-type="notify"><svg class="action-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="m13.73 21a2 2 0 0 1-3.46 0"/></svg><div class="action-info"><h4>Notify</h4><p>Send notifications</p></div></div>
+                    <div class="action-item" draggable="true" data-action-type="custom"><svg class="action-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg><div class="action-info"><h4>Custom Action</h4><p>Define custom logic</p></div></div>
+                </div>
+            </div>
+            <div class="canvas-container" id="canvasContainer">
+                <div class="model-canvas-wrapper">
+                    <h3 class="canvas-title">Model Architecture</h3>
+                    <div class="canvas-tools">
+                        <div class="tool-btn" id="zoomInTool"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg><div class="tooltip">Zoom In</div></div>
+                        <div class="tool-btn" id="zoomOutTool"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/><line x1="8" y1="11" x2="14" y2="11"/></svg><div class="tooltip">Zoom Out</div></div>
+                        <div class="tool-btn" id="canvasUndoTool"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7v6h6"/><path d="M21 17a9 9 0 00-9-9 9 9 0 00-6 2.3L3 13"/></svg><div class="tooltip">Undo</div></div>
+                        <div class="tool-btn" id="canvasRedoTool"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 7v6h-6"/><path d="M3 17a9 9 0 019-9 9 9 0 016 2.3l3 2.7"/></svg><div class="tooltip">Redo</div></div>
+                    </div>
+                    <div class="model-canvas" id="modelCanvas">
+                        <div class="canvas" id="canvas">
+                            <div class="drop-zone" id="dropZone"><svg class="drop-zone-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg><div>Drag components here to build your model</div></div>
+                        </div>
+                    </div>
+                    <div class="zoom-display" id="modelZoomDisplay">100%</div>
+                </div>
+                <div class="action-workflow">
+                    <h3 class="workflow-title">Action Workflow</h3>
+                    <div class="workflow-tools">
+                        <div class="tool-btn workflow-tool-btn" id="workflowZoomInTool"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg><div class="workflow-tooltip">Zoom In</div></div>
+                        <div class="tool-btn workflow-tool-btn" id="workflowZoomOutTool"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/><line x1="8" y1="11" x2="14" y2="11"/></svg><div class="workflow-tooltip">Zoom Out</div></div>
+                        <div class="tool-btn workflow-tool-btn" id="workflowUndoTool"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7v6h6"/><path d="M21 17a9 9 0 00-9-9 9 9 0 00-6 2.3L3 13"/></svg><div class="workflow-tooltip">Undo</div></div>
+                        <div class="tool-btn workflow-tool-btn" id="workflowRedoTool"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 7v6h-6"/><path d="M3 17a9 9 0 019-9 9 9 0 016 2.3l3 2.7"/></svg><div class="workflow-tooltip">Redo</div></div>
+                    </div>
+                    <div class="workflow-canvas-wrapper" id="workflowCanvasWrapper">
+                        <div class="workflow-canvas" id="workflowCanvas">
+                            <div class="workflow-placeholder">Drag actions here to create workflow</div>
+                        </div>
+                    </div>
+                    <div class="zoom-display" id="workflowZoomDisplay">100%</div>
+                </div>
+            </div>
+
+            <!-- Attributes Panel -->
+            <div class="attributes-panel" id="attributesPanel">
+                <div class="attributes-panel-header">
+                    <h3 id="attributesPanelTitle">Attributes</h3>
+                    <button class="attributes-panel-close" id="attributesPanelClose">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                    </button>
+                </div>
+                <div class="attributes-panel-content" id="attributesPanelContent">
+                    <!-- Content will be dynamically generated here -->
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="confirmation-overlay" id="confirmationModal">
+        <div class="confirmation-box">
+            <h3>Delete Component</h3>
+            <p>Are you sure you want to permanently delete this component?</p>
+            <div class="confirmation-actions">
+                <button class="btn confirm-btn-cancel" id="cancelDelete">Cancel</button>
+                <button class="btn confirm-btn-delete" id="confirmDelete">Delete</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Export Modal -->
+    <div class="export-overlay" id="exportOverlay">
+        <div class="export-modal">
+            <div class="export-modal-header">
+                <h3>Export Model Code</h3>
+                <button class="attributes-panel-close" id="closeExportModal">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                </button>
+            </div>
+            <div class="export-modal-content">
+
+                <!-- Step 1: Validation -->
+                <div id="export-validation-step">
+                    <p class="validation-intro">Your model will be checked for errors before generating code.</p>
+                    <ul class="validation-list">
+                        <li id="val-data-source">
+                            <span class="val-icon"></span>
+                            <span class="val-text">Exactly 1 Data Input component</span>
+                        </li>
+                        <li id="val-input-layer">
+                            <span class="val-icon"></span>
+                            <span class="val-text">Exactly 1 Input Layer</span>
+                        </li>
+                        <li id="val-output-layer">
+                            <span class="val-icon"></span>
+                            <span class="val-text">Exactly 1 Output Layer</span>
+                        </li>
+                        <li id="val-train-action">
+                            <span class="val-icon"></span>
+                            <span class="val-text">At least 1 Train action in the workflow</span>
+                        </li>
+                    </ul>
+                    <div class="validation-error-message" id="validation-error-box" style="display: none;">
+                        Please fix the issues above before proceeding.
+                    </div>
+
+                    <div class="export-options" id="export-options-box" style="display: none;">
+                        <h4>Options</h4>
+                        <div class="form-group toggle-group">
+                            <label for="useGpuToggle">Use GPU for training</label>
+                            <label class="switch">
+                                <input type="checkbox" id="useGpuToggle" checked>
+                                <span class="slider round"></span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 2: Loading -->
+                <div id="export-loading-step" style="display: none;">
+                    <div class="spinner-container">
+                        <div class="spinner-dot"></div>
+                        <div class="spinner-dot"></div>
+                        <div class="spinner-dot"></div>
+                    </div>
+                    <h4>Generating Code</h4>
+                    <p>Translating your visual model into Python...</p>
+                </div>
+
+                <!-- Step 3: Download -->
+                <div id="export-download-step" style="display: none;">
+                    <div class="success-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                    </div>
+                    <h4>Code Generated Successfully!</h4>
+                    <p>Your Python script is ready for download.</p>
+                </div>
+
+            </div>
+            <div class="export-modal-footer">
+                <button class="btn confirm-btn-cancel" id="cancelExportBtn">Cancel</button>
+                <button class="btn" id="generateCodeBtn" disabled>Generate Code</button>
+                <button class="btn" id="downloadCodeBtn" style="display: none;">Download Script</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let jsPlumbInstanceCanvas, jsPlumbInstanceWorkflow;
+        let draggedElement = null, componentCounter = 0, actionCounter = 0, draggedType = null, draggedComponentForDeleteId = null;
+        let activeElement = null, activeConnection = null, elementToDelete = null;
+        let canvasHistory = [], canvasHistoryIndex = -1, workflowHistory = [], workflowHistoryIndex = -1;
+        let clipboard = null;
+
+        const contentWrapper = document.getElementById('contentWrapper');
+        const sidePanel = document.getElementById('sidePanel');
+        const canvas = document.getElementById('canvas');
+        const modelCanvas = document.getElementById('modelCanvas');
+        const workflowCanvasWrapper = document.getElementById('workflowCanvasWrapper');
+        const workflowCanvas = document.getElementById('workflowCanvas');
+        const dropZone = document.getElementById('dropZone');
+        const confirmationModal = document.getElementById('confirmationModal');
+        const modelZoomDisplay = document.getElementById('modelZoomDisplay');
+        const workflowZoomDisplay = document.getElementById('workflowZoomDisplay');
+        const attributesPanel = document.getElementById('attributesPanel');
+        const attributesPanelTitle = document.getElementById('attributesPanelTitle');
+        const attributesPanelContent = document.getElementById('attributesPanelContent');
+        const attributesPanelClose = document.getElementById('attributesPanelClose');
+
+        const defaultAttributes = {
+            'data-input': { filepath: '/data/dataset.csv', train: 80, test: 10, val: 10, notes: '' },
+            'input-layer': { neurons: 784, activation: 'None', notes: '' },
+            'hidden-layer': { neurons: 128, activation: 'ReLU', notes: '' },
+            'output-layer': { neurons: 10, activation: 'Softmax', temperature: 1.0, notes: '' },
+            'train': { epochs: 50, dropout: 0.2, optimizer: 'Adam', notes: '' },
+            'test': { notes: '' },
+            'analytics': { rocAuc: true, f1Score: true, precision: false, recall: false, confMatrix: false, display: 'test', notes: '' },
+            'user-input': { inputType: 'Text', notes: '' },
+            'notify': { notificationText: "Your model '{{ model_name }}' has finished training. Satisfied or do you want to iterate again with Thinking Machines ?", webhookUrl: '', notes: '' },
+            'custom': { customCode: '# Your custom Python code here\nprint("Executing custom action...")', notes: '' }
+        };
+
+        jsPlumb.ready(() => {
+            jsPlumbInstanceCanvas = jsPlumb.getInstance({
+                Connector: ["Bezier", { curviness: 50 }], PaintStyle: { stroke: "var(--accent-color)", strokeWidth: 2 },
+                Endpoint: ["Dot", { radius: 6 }], EndpointStyle: { fill: "var(--accent-color)", stroke: "var(--component-bg)", strokeWidth: 1 },
+                HoverPaintStyle: { stroke: "var(--accent-hover)", strokeWidth: 3 }, Container: "canvas",
+            });
+            
+            jsPlumbInstanceCanvas.bind("beforeDrop", (info) => {
+                const source = document.getElementById(info.sourceId);
+                const target = document.getElementById(info.targetId);
+                const sourceType = source.dataset.componentType;
+                const targetType = target.dataset.componentType;
+                const validConnections = {
+                    'data-input': ['input-layer'],
+                    'input-layer': ['hidden-layer'],
+                    'hidden-layer': ['hidden-layer', 'output-layer']
+                };
+                return validConnections[sourceType]?.includes(targetType);
+            });
+
+            jsPlumbInstanceCanvas.bind("connection", (info, originalEvent) => { if (originalEvent) saveCanvasState(); });
+            jsPlumbInstanceCanvas.bind("connectionDetached", (info, originalEvent) => { if (originalEvent) saveCanvasState(); });
+            jsPlumbInstanceCanvas.bind("connectionClick", (connection, originalEvent) => {
+                originalEvent.stopPropagation();
+                selectConnection(connection);
+            });
+
+            jsPlumbInstanceWorkflow = jsPlumb.getInstance({
+                Connector: ["Bezier", { curviness: 50 }], PaintStyle: { stroke: "#8b5cf6", strokeWidth: 2 },
+                Endpoint: ["Dot", { radius: 6 }], EndpointStyle: { fill: "#8b5cf6", stroke: "var(--action-bg)", strokeWidth: 1 },
+                HoverPaintStyle: { stroke: "#a78bfa", strokeWidth: 3 }, Container: "workflowCanvas",
+            });
+            jsPlumbInstanceWorkflow.bind("connection", (info, originalEvent) => { if (originalEvent) saveWorkflowState(); });
+            jsPlumbInstanceWorkflow.bind("connectionDetached", (info, originalEvent) => { if (originalEvent) saveWorkflowState(); });
+
+            // **FIX**: Initialize state and center canvas only AFTER jsPlumb is ready
+            saveCanvasState();
+            saveWorkflowState();
+            modelCanvas.scrollTop = (canvas.clientHeight - modelCanvas.clientHeight) / 2;
+            modelCanvas.scrollLeft = (canvas.clientWidth - modelCanvas.clientWidth) / 2;
+            workflowCanvasWrapper.scrollTop = (workflowCanvas.clientHeight - workflowCanvasWrapper.clientHeight) / 2;
+            workflowCanvasWrapper.scrollLeft = (workflowCanvas.clientWidth - workflowCanvasWrapper.clientWidth) / 2;
+        });
+        
+        document.getElementById('themeToggle').addEventListener('click', () => {
+            const body = document.body;
+            const newTheme = body.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+            body.setAttribute('data-theme', newTheme);
+            document.querySelector('.sun-icon').classList.toggle('hidden', newTheme === 'dark');
+            document.querySelector('.moon-icon').classList.toggle('hidden', newTheme === 'light');
+            jsPlumbInstanceCanvas?.repaintEverything();
+            jsPlumbInstanceWorkflow?.repaintEverything();
+        });
+
+        document.querySelectorAll('.component-item, .action-item').forEach(item => {
+            item.addEventListener('dragstart', (e) => {
+                draggedElement = e.target.closest('.component-item, .action-item');
+                draggedType = draggedElement.classList.contains('component-item') ? 'component' : 'action';
+                e.dataTransfer.effectAllowed = 'copy';
+            });
+        });
+
+        canvas.addEventListener('dragover', e => { if (draggedType === 'component') e.preventDefault(); });
+        canvas.addEventListener('drop', e => {
+            if (draggedType === 'component' && draggedElement) {
+                if (canvas.querySelectorAll('.dropped-component').length === 0) dropZone.style.display = 'none';
+                createDroppedComponent(e.clientX, e.clientY, draggedElement.dataset.componentType);
+            }
+        });
+
+        workflowCanvas.addEventListener('dragover', e => { if (draggedType === 'action') e.preventDefault(); });
+        workflowCanvas.addEventListener('drop', e => {
+            if (draggedType === 'action' && draggedElement) {
+                const placeholder = workflowCanvas.querySelector('.workflow-placeholder');
+                if (placeholder) placeholder.style.display = 'none';
+                createDroppedAction(e.clientX, e.clientY, draggedElement.dataset.actionType);
+            }
+        });
+        
+        sidePanel.addEventListener('dragover', e => { if (draggedComponentForDeleteId) e.preventDefault(); });
+        sidePanel.addEventListener('drop', e => {
+            if (draggedComponentForDeleteId) {
+                const elementToRemove = document.getElementById(draggedComponentForDeleteId);
+                if (elementToRemove.classList.contains('dropped-component')) {
+                     jsPlumbInstanceCanvas.remove(draggedComponentForDeleteId);
+                     if (canvas.querySelectorAll('.dropped-component').length === 0) dropZone.style.display = 'flex';
+                     saveCanvasState();
+                } else {
+                    jsPlumbInstanceWorkflow.remove(draggedComponentForDeleteId);
+                    if (workflowCanvas.querySelectorAll('.dropped-action').length === 0) {
+                        const placeholder = workflowCanvas.querySelector('.workflow-placeholder');
+                        if (placeholder) placeholder.style.display = 'block';
+                    }
+                    saveWorkflowState();
+                }
+            }
+        });
+
+        function createDroppedComponent(clientX, clientY, componentType, attributes = null, id = null) {
+            componentCounter++;
+            const droppedComponent = document.createElement('div');
+            droppedComponent.className = 'dropped-component';
+            droppedComponent.id = id || `comp-${componentCounter}`;
+            droppedComponent.dataset.componentType = componentType;
+            droppedComponent.draggable = true;
+            
+            const canvasRect = canvas.getBoundingClientRect();
+            droppedComponent.style.left = `${clientX - canvasRect.left - 100}px`;
+            droppedComponent.style.top = `${clientY - canvasRect.top - 60}px`;
+
+            const sourceElement = document.querySelector(`.component-item[data-component-type="${componentType}"]`);
+            const componentTitle = sourceElement.querySelector('h4').textContent;
+            const componentIcon = sourceElement.querySelector('.component-icon').outerHTML;
+
+            droppedComponent.innerHTML = `
+                <button class="edit-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></button>
+                <div class="component-header">${componentIcon}<span class="component-title">${componentTitle}</span></div>
+                <div class="layer-visual-container"></div>
+                <div class="component-details"></div>`;
+            canvas.appendChild(droppedComponent);
+            
+            const currentAttributes = attributes || { ...defaultAttributes[componentType] };
+            for (const key in currentAttributes) {
+                droppedComponent.dataset[key] = currentAttributes[key];
+            }
+            updateComponentVisuals(droppedComponent);
+
+            droppedComponent.addEventListener('click', e => { selectElement(droppedComponent); e.stopPropagation(); });
+            droppedComponent.querySelector('.edit-btn').addEventListener('click', e => {
+                e.stopPropagation();
+                selectElement(droppedComponent);
+                showAttributesPanel(droppedComponent);
+            });
+            droppedComponent.addEventListener('dragstart', e => { draggedComponentForDeleteId = droppedComponent.id; sidePanel.classList.add('delete-active'); e.stopPropagation(); });
+            droppedComponent.addEventListener('dragend', () => { sidePanel.classList.remove('delete-active'); draggedComponentForDeleteId = null; });
+
+            if (componentType === 'data-input') jsPlumbInstanceCanvas.addEndpoint(droppedComponent, { anchor: "Right", isSource: true });
+            else if (componentType === 'output-layer') jsPlumbInstanceCanvas.addEndpoint(droppedComponent, { anchor: "Left", isTarget: true });
+            else { 
+                jsPlumbInstanceCanvas.addEndpoint(droppedComponent, { anchor: "Left", isTarget: true });
+                jsPlumbInstanceCanvas.addEndpoint(droppedComponent, { anchor: "Right", isSource: true });
+            }
+            jsPlumbInstanceCanvas.draggable(droppedComponent, { containment: true, grid: [10, 10], stop: () => { jsPlumbInstanceCanvas.repaintEverything(); saveCanvasState(); } });
+            
+            if(!id) saveCanvasState();
+            return droppedComponent;
+        }
+
+        function createDroppedAction(clientX, clientY, actionType, attributes = null, id = null) {
+            actionCounter++;
+            const droppedAction = document.createElement('div');
+            droppedAction.className = 'dropped-action';
+            droppedAction.id = id || `action-${actionCounter}`;
+            droppedAction.dataset.actionType = actionType;
+
+            const workflowRect = workflowCanvas.getBoundingClientRect();
+            droppedAction.style.left = `${clientX - workflowRect.left - 80}px`;
+            droppedAction.style.top = `${clientY - workflowRect.top - 25}px`;
+
+            const sourceElement = document.querySelector(`.action-item[data-action-type="${actionType}"]`);
+            const actionTitle = sourceElement.querySelector('h4').textContent;
+            const actionIcon = sourceElement.querySelector('.action-icon').outerHTML;
+
+            droppedAction.innerHTML = `
+                <button class="edit-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></button>
+                <div class="action-header">${actionIcon}<span class="action-title">${actionTitle}</span></div>
+                <div class="action-details"></div>`;
+            workflowCanvas.appendChild(droppedAction);
+
+            const currentAttributes = attributes || { ...defaultAttributes[actionType] };
+            for (const key in currentAttributes) {
+                droppedAction.dataset[key] = currentAttributes[key];
+            }
+            updateComponentVisuals(droppedAction);
+
+            droppedAction.addEventListener('click', e => { selectElement(droppedAction); e.stopPropagation(); });
+            droppedAction.querySelector('.edit-btn').addEventListener('click', e => {
+                e.stopPropagation();
+                selectElement(droppedAction);
+                showAttributesPanel(droppedAction);
+            });
+            droppedAction.addEventListener('dragstart', e => { draggedComponentForDeleteId = droppedAction.id; sidePanel.classList.add('delete-active'); e.stopPropagation(); });
+            droppedAction.addEventListener('dragend', () => { sidePanel.classList.remove('delete-active'); draggedComponentForDeleteId = null; });
+            
+            jsPlumbInstanceWorkflow.addEndpoint(droppedAction, { anchor: "Right", isSource: true, isTarget: true });
+            jsPlumbInstanceWorkflow.addEndpoint(droppedAction, { anchor: "Left", isSource: true, isTarget: true });
+            jsPlumbInstanceWorkflow.draggable(droppedAction, { containment: "parent", grid: [10, 10], stop: () => { jsPlumbInstanceWorkflow.repaintEverything(); saveWorkflowState(); } });
+            
+            if(!id) saveWorkflowState();
+            return droppedAction;
+        }
+
+        function updateComponentVisuals(element) {
+            const type = element.dataset.componentType || element.dataset.actionType;
+            const detailsContainer = element.querySelector('.component-details, .action-details');
+            if (!detailsContainer) return;
+
+            let detailsHTML = '';
+            if (['input-layer', 'hidden-layer', 'output-layer'].includes(type)) {
+                const neurons = parseInt(element.dataset.neurons, 10) || 1;
+                const visualContainer = element.querySelector('.layer-visual-container');
+                const maxVisibleNeurons = Math.round(2 + 8 * (neurons / (neurons + 100)));
+
+                let neuronsHTML = Array.from({length: maxVisibleNeurons}, () => `<div class="neuron"></div>`).join('');
+                if (neurons > maxVisibleNeurons) {
+                    neuronsHTML += `<div class="neuron-more">+ ${neurons - maxVisibleNeurons} more</div>`;
+                }
+                visualContainer.innerHTML = `<div class="layer-visual">${neuronsHTML}</div>`;
+                detailsHTML = `Neurons: ${neurons}<br>Activation: ${element.dataset.activation}`;
+            } else if (type === 'data-input') {
+                detailsHTML = `Split: ${element.dataset.train}/${element.dataset.test}/${element.dataset.val}`;
+            } else if (type === 'train') {
+                detailsHTML = `${element.dataset.epochs} Epochs, ${element.dataset.optimizer}`;
+            } else if (type === 'analytics') {
+                const metrics = ['rocAuc', 'f1Score', 'precision', 'recall', 'confMatrix']
+                    .filter(m => element.dataset[m] === 'true').length;
+                detailsHTML = `${metrics} metrics, on ${element.dataset.display} data`;
+            } else if (type === 'user-input') {
+                detailsHTML = `Type: ${element.dataset.inputType}`;
+            } else if (type === 'notify') {
+                detailsHTML = `Webhook: ${element.dataset.webhookUrl ? 'Set' : 'Not Set'}`;
+            } else if (type === 'custom') {
+                const lineCount = (element.dataset.customCode.match(/\n/g) || []).length + 1;
+                detailsHTML = `Code: ${lineCount} lines`;
+            }
+
+            detailsContainer.innerHTML = detailsHTML;
+        }
+
+        function deselectAll() {
+            if (activeElement) activeElement.classList.remove('selected');
+            if (activeConnection) activeConnection.removeClass('connection-selected');
+            activeElement = null;
+            activeConnection = null;
+            hideAttributesPanel();
+        }
+        function selectElement(element) { 
+            if (activeElement === element) return; 
+            if(activeElement) activeElement.classList.remove('selected');
+            hideAttributesPanel();
+            activeElement = element; 
+            if (activeElement) activeElement.classList.add('selected');
+        }
+        function selectConnection(connection) { deselectAll(); activeConnection = connection; activeConnection.addClass('connection-selected'); }
+
+        modelCanvas.addEventListener('click', deselectAll);
+        workflowCanvasWrapper.addEventListener('click', deselectAll);
+        
+        document.addEventListener('keydown', e => {
+            if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') return;
+
+            if (e.key === 'Delete' || e.key === 'Backspace') {
+                if (activeElement) {
+                    elementToDelete = activeElement;
+                    confirmationModal.style.display = 'flex';
+                } else if (activeConnection) {
+                    jsPlumbInstanceCanvas.deleteConnection(activeConnection);
+                    activeConnection = null;
+                    saveCanvasState();
+                }
+            }
+            if ((e.ctrlKey || e.metaKey) && e.key === 'c') {
+                if (activeElement) {
+                    clipboard = {
+                        type: activeElement.dataset.componentType || activeElement.dataset.actionType,
+                        isComponent: activeElement.classList.contains('dropped-component'),
+                        attributes: { ...activeElement.dataset },
+                        position: { left: activeElement.style.left, top: activeElement.style.top }
+                    };
+                    e.preventDefault();
+                }
+            }
+            if ((e.ctrlKey || e.metaKey) && e.key === 'v') {
+                if (clipboard) {
+                    const newLeft = parseInt(clipboard.position.left, 10) + 20;
+                    const newTop = parseInt(clipboard.position.top, 10) + 20;
+                    if(clipboard.isComponent) {
+                        const canvasRect = canvas.getBoundingClientRect();
+                        createDroppedComponent(canvasRect.left + newLeft, canvasRect.top + newTop, clipboard.type, clipboard.attributes);
+                    } else {
+                        const workflowRect = workflowCanvas.getBoundingClientRect();
+                        createDroppedAction(workflowRect.left + newLeft, workflowRect.top + newTop, clipboard.type, clipboard.attributes);
+                    }
+                    e.preventDefault();
+                }
+            }
+        });
+        
+        document.getElementById('confirmDelete').addEventListener('click', () => {
+            if (elementToDelete) {
+                if (elementToDelete.classList.contains('dropped-component')) {
+                     jsPlumbInstanceCanvas.remove(elementToDelete);
+                     if (canvas.querySelectorAll('.dropped-component').length === 0) dropZone.style.display = 'flex';
+                     saveCanvasState();
+                } else {
+                    jsPlumbInstanceWorkflow.remove(elementToDelete);
+                    if (workflowCanvas.querySelectorAll('.dropped-action').length === 0) {
+                       const placeholder = workflowCanvas.querySelector('.workflow-placeholder');
+                       if (placeholder) placeholder.style.display = 'block';
+                    }
+                    saveWorkflowState();
+                }
+            }
+            confirmationModal.style.display = 'none';
+            elementToDelete = null;
+            activeElement = null;
+            hideAttributesPanel();
+        });
+        document.getElementById('cancelDelete').addEventListener('click', () => { confirmationModal.style.display = 'none'; elementToDelete = null; });
+
+        attributesPanelClose.addEventListener('click', deselectAll);
+        
+        function hideAttributesPanel() {
+            attributesPanel.classList.remove('visible');
+            contentWrapper.classList.remove('attributes-panel-visible');
+        }
+
+        function showAttributesPanel(element) {
+            const type = element.dataset.componentType || element.dataset.actionType;
+            const sourceElement = document.querySelector(`.component-item[data-component-type="${type}"], .action-item[data-action-type="${type}"]`);
+            const title = sourceElement.querySelector('h4').textContent;
+            
+            attributesPanelTitle.textContent = `Edit: ${title}`;
+            attributesPanelContent.innerHTML = generateAttributesForm(element);
+            
+            attributesPanelContent.querySelectorAll('input, select, textarea').forEach(input => {
+                const eventType = input.type === 'checkbox' || input.tagName === 'SELECT' || input.type === 'radio' ? 'change' : 'input';
+                input.addEventListener(eventType, (e) => {
+                    const key = e.target.name;
+                    const value = input.type === 'checkbox' ? e.target.checked : e.target.value;
+                    element.dataset[key] = value;
+                    updateComponentVisuals(element);
+                    if (element.classList.contains('dropped-component')) saveCanvasState();
+                    else saveWorkflowState();
+                });
+            });
+            
+            contentWrapper.classList.add('attributes-panel-visible');
+            attributesPanel.classList.add('visible');
+        }
+
+        function generateAttributesForm(element) {
+            const data = element.dataset;
+            const type = data.componentType || data.actionType;
+            let formHTML = '';
+
+            const createInput = (name, label, value, inputType = 'number', step = '1') => `<div class="form-group"><label for="${name}">${label}</label><input type="${inputType}" name="${name}" id="${name}" value="${value}" step="${step}"></div>`;
+            const createSelect = (name, label, value, options) => {
+                let opts = options.map(o => `<option value="${o}" ${o === value ? 'selected' : ''}>${o}</option>`).join('');
+                return `<div class="form-group"><label for="${name}">${label}</label><select name="${name}" id="${name}">${opts}</select></div>`;
+            };
+            const createTextarea = (name, label, value, className = '') => `<div class="form-group"><label for="${name}">${label}</label><textarea name="${name}" id="${name}" class="${className}">${value}</textarea></div>`;
+            
+            if (['input-layer', 'hidden-layer', 'output-layer'].includes(type)) {
+                formHTML += `<div class="attr-section"><h4>Parameters</h4>
+                    ${createInput('neurons', 'Neuron Count', data.neurons)}
+                    ${createSelect('activation', 'Activation Function', data.activation, ['ReLU', 'Sigmoid', 'Tanh', 'Softmax', 'Linear', 'None'])}
+                    ${type === 'output-layer' ? createInput('temperature', 'Temperature', data.temperature, 'number', '0.1') : ''}
+                </div>`;
+            } else if (type === 'data-input') {
+                formHTML += `<div class="attr-section"><h4>Data Source</h4>
+                    ${createInput('filepath', 'Filepath', data.filepath, 'text')}
+                    <h4>Data Split (%)</h4>
+                    ${createInput('train', 'Train', data.train)}
+                    ${createInput('test', 'Test', data.test)}
+                    ${createInput('val', 'Validation', data.val)}
+                </div>`;
+            } else if (type === 'train') {
+                formHTML += `<div class="attr-section"><h4>Hyperparameters</h4>
+                    ${createInput('epochs', 'Epochs', data.epochs)}
+                    ${createInput('dropout', 'Dropout Rate', data.dropout, 'number', '0.05')}
+                    ${createSelect('optimizer', 'Optimizer', data.optimizer, ['Adam', 'SGD', 'RMSprop', 'Adagrad'])}
+                </div>`;
+            } else if (type === 'analytics') {
+                const createSwitch = (name, label, checked) => `
+                    <div class="form-group switch-group">
+                        <label for="${name}">${label}</label>
+                        <label class="switch">
+                            <input type="checkbox" name="${name}" id="${name}" ${checked}>
+                            <span class="slider round"></span>
+                        </label>
+                    </div>`;
+
+                formHTML += `<div class="attr-section"><h4>Metrics</h4>
+                    ${createSwitch('rocAuc', 'ROC AUC Curve', data.rocAuc === 'true')}
+                    ${createSwitch('f1Score', 'F1-Score', data.f1Score === 'true')}
+                    ${createSwitch('precision', 'Precision', data.precision === 'true')}
+                    ${createSwitch('recall', 'Recall', data.recall === 'true')}
+                    ${createSwitch('confMatrix', 'Confusion Matrix', data.confMatrix === 'true')}
+                    <h4>Data Scope</h4>
+                    <div class="form-group">
+                         <div class="segmented-control">
+                            <input type="radio" name="display" value="test" id="display-test" ${data.display === 'test' ? 'checked' : ''}>
+                            <label for="display-test">Test Only</label>
+                            <input type="radio" name="display" value="both" id="display-both" ${data.display === 'both' ? 'checked' : ''}>
+                            <label for="display-both">Test & Train</label>
+                        </div>
+                    </div>
+                </div>`;
+            } else if (type === 'user-input') {
+                formHTML += `<div class="attr-section"><h4>Configuration</h4>
+                    ${createSelect('inputType', 'Input Type', data.inputType, ['Text', 'File'])}
+                </div>`;
+            } else if (type === 'notify') {
+                 formHTML += `<div class="attr-section"><h4>Configuration</h4>
+                    ${createTextarea('notificationText', 'Notification Text', data.notificationText)}
+                    ${createInput('webhookUrl', 'Webhook URL', data.webhookUrl, 'text')}
+                </div>`;
+            } else if (type === 'custom') {
+                 formHTML += `<div class="attr-section"><h4>Python Code</h4>
+                    ${createTextarea('customCode', 'Custom Logic', data.customCode, 'code-input')}
+                </div>`;
+            }
+
+            formHTML += `<div class="attr-section"><h4>Notes</h4>${createTextarea('notes', 'Notes', data.notes)}</div>`;
+            return formHTML;
+        }
+
+        // **FIX**: Added guard clauses to prevent race condition
+        function saveCanvasState() {
+            if (!jsPlumbInstanceCanvas) return; // Guard clause
+            const state = {
+                components: Array.from(canvas.querySelectorAll(".dropped-component")).map(c => ({ id: c.id, type: c.dataset.componentType, left: c.style.left, top: c.style.top, attributes: { ...c.dataset } })),
+                connections: jsPlumbInstanceCanvas.getAllConnections().map(conn => ({ sourceId: conn.sourceId, targetId: conn.targetId }))
+            };
+            if (canvasHistoryIndex < canvasHistory.length - 1) canvasHistory = canvasHistory.slice(0, canvasHistoryIndex + 1);
+            canvasHistory.push(state);
+            canvasHistoryIndex++;
+        }
+
+        function loadCanvasState(state) {
+            deselectAll();
+            jsPlumbInstanceCanvas.batch(() => {
+                jsPlumbInstanceCanvas.deleteEveryConnection({ fireEvent: !1 });
+                canvas.querySelectorAll(".dropped-component").forEach(c => jsPlumbInstanceCanvas.remove(c));
+                state.components.forEach(comp => {
+                    const newEl = createDroppedComponent(0, 0, comp.type, comp.attributes, comp.id);
+                    newEl.style.left = comp.left;
+                    newEl.style.top = comp.top;
+                });
+                setTimeout(() => {
+                    state.connections.forEach(conn => jsPlumbInstanceCanvas.connect({ source: conn.sourceId, target: conn.targetId, fireEvent: !1 }))
+                }, 0)
+            });
+            if (canvas.querySelectorAll(".dropped-component").length > 0) dropZone.style.display = "none"; else dropZone.style.display = "flex"
+        }
+
+        function saveWorkflowState() {
+            if (!jsPlumbInstanceWorkflow) return; // Guard clause
+            const state = {
+                actions: Array.from(workflowCanvas.querySelectorAll(".dropped-action")).map(a => ({ id: a.id, type: a.dataset.actionType, left: a.style.left, top: a.style.top, attributes: { ...a.dataset } })),
+                connections: jsPlumbInstanceWorkflow.getAllConnections().map(conn => ({ sourceId: conn.sourceId, targetId: conn.targetId }))
+            };
+            if (workflowHistoryIndex < workflowHistory.length - 1) workflowHistory = workflowHistory.slice(0, workflowHistoryIndex + 1);
+            workflowHistory.push(state);
+            workflowHistoryIndex++;
+        }
+
+        function loadWorkflowState(state) {
+            jsPlumbInstanceWorkflow.batch(() => {
+                jsPlumbInstanceWorkflow.deleteEveryConnection({ fireEvent: !1 });
+                workflowCanvas.querySelectorAll(".dropped-action").forEach(a => jsPlumbInstanceWorkflow.remove(a));
+                state.actions.forEach(action => {
+                    const newEl = createDroppedAction(0, 0, action.type, action.attributes, action.id);
+                    newEl.style.left = action.left;
+                    newEl.style.top = action.top;
+                });
+                setTimeout(() => {
+                    state.connections.forEach(conn => jsPlumbInstanceWorkflow.connect({ source: conn.sourceId, target: conn.targetId, fireEvent: !1 }))
+                }, 0)
+            });
+            const placeholder = workflowCanvas.querySelector(".workflow-placeholder");
+            if (placeholder) placeholder.style.display = state.actions.length > 0 ? "none" : "block"
+        }
+
+        let zoomLevel = 1, workflowZoomLevel = 1; const zoomStep = 0.2;
+        
+        function applyZoom(container, canvasEl, currentZoom, newZoom, e) {
+            const containerRect = container.getBoundingClientRect();
+            let mouseX, mouseY;
+
+            if (e) {
+                mouseX = e.clientX - containerRect.left;
+                mouseY = e.clientY - containerRect.top;
+            } else {
+                mouseX = container.clientWidth / 2;
+                mouseY = container.clientHeight / 2;
+            }
+
+            const pointX = (container.scrollLeft + mouseX) / currentZoom;
+            const pointY = (container.scrollTop + mouseY) / currentZoom;
+            
+            canvasEl.style.transform = `scale(${newZoom})`;
+            
+            container.scrollLeft = pointX * newZoom - mouseX;
+            container.scrollTop = pointY * newZoom - mouseY;
+
+            if (container === modelCanvas) {
+                modelZoomDisplay.textContent = `${Math.round(newZoom * 100)}%`;
+                jsPlumbInstanceCanvas.setZoom(newZoom);
+            } else {
+                workflowZoomDisplay.textContent = `${Math.round(newZoom * 100)}%`;
+                jsPlumbInstanceWorkflow.setZoom(newZoom);
+            }
+            
+            return newZoom;
+        }
+
+        document.getElementById('zoomInTool').addEventListener('click', () => { zoomLevel = applyZoom(modelCanvas, canvas, zoomLevel, Math.min(zoomLevel + zoomStep, 2)); });
+        document.getElementById('zoomOutTool').addEventListener('click', () => { zoomLevel = applyZoom(modelCanvas, canvas, zoomLevel, Math.max(zoomLevel - zoomStep, 0.5)); });
+        document.getElementById('canvasUndoTool').addEventListener('click', () => { if (canvasHistoryIndex > 0) { canvasHistoryIndex--; loadCanvasState(canvasHistory[canvasHistoryIndex]); } });
+        document.getElementById('canvasRedoTool').addEventListener('click', () => { if (canvasHistoryIndex < canvasHistory.length - 1) { canvasHistoryIndex++; loadCanvasState(canvasHistory[canvasHistoryIndex]); } });
+        document.getElementById('workflowZoomInTool').addEventListener('click', () => { workflowZoomLevel = applyZoom(workflowCanvasWrapper, workflowCanvas, workflowZoomLevel, Math.min(workflowZoomLevel + zoomStep, 1.5)); });
+        document.getElementById('workflowZoomOutTool').addEventListener('click', () => { workflowZoomLevel = applyZoom(workflowCanvasWrapper, workflowCanvas, workflowZoomLevel, Math.max(workflowZoomLevel - zoomStep, 0.5)); });
+        document.getElementById('workflowUndoTool').addEventListener('click', () => { if (workflowHistoryIndex > 0) { workflowHistoryIndex--; loadWorkflowState(workflowHistory[workflowHistoryIndex]); } });
+        document.getElementById('workflowRedoTool').addEventListener('click', () => { if (workflowHistoryIndex < workflowHistory.length - 1) { workflowHistoryIndex++; loadWorkflowState(workflowHistory[workflowHistoryIndex]); } });
+
+        modelCanvas.addEventListener('wheel', e => {
+            e.preventDefault();
+            const zoomDirection = e.deltaY < 0 ? 1 : -1;
+            const newZoom = Math.max(0.5, Math.min(2, zoomLevel + zoomDirection * zoomStep));
+            zoomLevel = applyZoom(modelCanvas, canvas, zoomLevel, newZoom, e);
+        });
+
+        workflowCanvasWrapper.addEventListener('wheel', e => {
+            e.preventDefault();
+            const zoomDirection = e.deltaY < 0 ? 1 : -1;
+            const newZoom = Math.max(0.5, Math.min(1.5, workflowZoomLevel + zoomDirection * zoomStep));
+            workflowZoomLevel = applyZoom(workflowCanvasWrapper, workflowCanvas, workflowZoomLevel, newZoom, e);
+        });
+        
+        let isPanning = false, startPanX, startPanY;
+        let isWorkflowPanning = false, startWorkflowPanX, startWorkflowPanY;
+        modelCanvas.addEventListener('mousedown', e => { if (e.target === modelCanvas || e.target === canvas) { isPanning = true; startPanX = e.clientX; startPanY = e.clientY; } });
+        workflowCanvasWrapper.addEventListener('mousedown', e => { if (e.target === workflowCanvasWrapper || e.target === workflowCanvas) { isWorkflowPanning = true; startWorkflowPanX = e.clientX; startWorkflowPanY = e.clientY; } });
+        document.addEventListener('mousemove', e => { 
+            if (isPanning) { 
+                modelCanvas.scrollLeft -= (e.clientX - startPanX); modelCanvas.scrollTop -= (e.clientY - startPanY); 
+                startPanX = e.clientX; startPanY = e.clientY; 
+            }
+            if (isWorkflowPanning) {
+                workflowCanvasWrapper.scrollLeft -= (e.clientX - startWorkflowPanX);
+                workflowCanvasWrapper.scrollTop -= (e.clientY - startWorkflowPanY);
+                startWorkflowPanX = e.clientX; startWorkflowPanY = e.clientY;
+            }
+        });
+        document.addEventListener('mouseup', () => { isPanning = false; isWorkflowPanning = false; });
+        
+        // --- EXPORT MODAL LOGIC ---
+        const exportOverlay = document.getElementById('exportOverlay');
+        const closeExportModalBtn = document.getElementById('closeExportModal');
+        const cancelExportBtn = document.getElementById('cancelExportBtn');
+        const generateCodeBtn = document.getElementById('generateCodeBtn');
+        const downloadCodeBtn = document.getElementById('downloadCodeBtn');
+
+        const validationStep = document.getElementById('export-validation-step');
+        const loadingStep = document.getElementById('export-loading-step');
+        const downloadStep = document.getElementById('export-download-step');
+        const validationErrorBox = document.getElementById('validation-error-box');
+        const exportOptionsBox = document.getElementById('export-options-box');
+
+        let generatedCodeContent = { keras: '', pytorch: '' };
+
+        function resetExportModal() {
+            validationStep.style.display = 'block';
+            loadingStep.style.display = 'none';
+            downloadStep.style.display = 'none';
+            generateCodeBtn.style.display = 'inline-flex';
+            downloadCodeBtn.style.display = 'none';
+            
+            document.querySelectorAll('.validation-list li').forEach(li => {
+                li.className = '';
+            });
+        }
+
+        function openExportModal() {
+            resetExportModal();
+            runExportValidation();
+            exportOverlay.classList.add('visible');
+        }
+
+        function closeExportModal() {
+            exportOverlay.classList.remove('visible');
+        }
+
+        function runExportValidation() {
+            const components = canvasHistory[canvasHistoryIndex]?.components || [];
+            const actions = workflowHistory[workflowHistoryIndex]?.actions || [];
+            
+            const componentCounts = {
+                'data-input': 0,
+                'input-layer': 0,
+                'output-layer': 0
+            };
+            components.forEach(comp => {
+                if (comp.type in componentCounts) {
+                    componentCounts[comp.type]++;
+                }
+            });
+
+            const trainActionCount = actions.filter(action => action.type === 'train').length;
+
+            let isModelValid = true;
+
+            const valDataSource = document.getElementById('val-data-source');
+            if (componentCounts['data-input'] === 1) {
+                valDataSource.className = 'success';
+            } else {
+                valDataSource.className = 'error';
+                isModelValid = false;
+            }
+
+            const valInputLayer = document.getElementById('val-input-layer');
+            if (componentCounts['input-layer'] === 1) {
+                valInputLayer.className = 'success';
+            } else {
+                valInputLayer.className = 'error';
+                isModelValid = false;
+            }
+
+            const valOutputLayer = document.getElementById('val-output-layer');
+            if (componentCounts['output-layer'] === 1) {
+                valOutputLayer.className = 'success';
+            } else {
+                valOutputLayer.className = 'error';
+                isModelValid = false;
+            }
+
+            const valTrainAction = document.getElementById('val-train-action');
+            if (trainActionCount >= 1) {
+                valTrainAction.className = 'success';
+            } else {
+                valTrainAction.className = 'error';
+                isModelValid = false;
+            }
+
+            generateCodeBtn.disabled = !isModelValid;
+            validationErrorBox.style.display = isModelValid ? 'none' : 'block';
+            exportOptionsBox.style.display = isModelValid ? 'block' : 'none';
+        }
+
+        document.getElementById('exportBtn').addEventListener('click', openExportModal);
+        closeExportModalBtn.addEventListener('click', closeExportModal);
+        cancelExportBtn.addEventListener('click', closeExportModal);
+        exportOverlay.addEventListener('click', (e) => {
+            if (e.target === exportOverlay) {
+                closeExportModal();
+            }
+        });
+
+        generateCodeBtn.addEventListener('click', async () => {
+            validationStep.style.display = 'none';
+            loadingStep.style.display = 'block';
+            generateCodeBtn.disabled = true;
+
+            const useGpu = document.getElementById('useGpuToggle').checked;
+            const modelName = document.title.split(': ')[1] || 'MyModel';
+            
+            const payload = {
+                modelName: modelName,
+                architecture: canvasHistory[canvasHistoryIndex],
+                workflow: workflowHistory[workflowHistoryIndex],
+                options: {
+                    useGpu: useGpu
+                }
+            };
+
+            try {
+                // **FIX**: Changed endpoint to /generate-code-mlp
+                const response = await fetch('/generate-code-mlp', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || `Server responded with status: ${response.status}`);
+                }
+
+                const result = await response.json();
+                generatedCodeContent.keras = result.keras_code;
+                generatedCodeContent.pytorch = result.pytorch_code;
+
+                loadingStep.style.display = 'none';
+                downloadStep.style.display = 'block';
+                generateCodeBtn.style.display = 'none';
+                downloadCodeBtn.style.display = 'inline-flex';
+
+            } catch (error) {
+                console.error("Error generating code:", error);
+                alert(`An error occurred: ${error.message}`);
+                resetExportModal();
+                runExportValidation();
+            }
+        });
+
+        downloadCodeBtn.addEventListener('click', () => {
+            const code = generatedCodeContent.keras;
+            if (!code) {
+                alert("No code content to download.");
+                return;
+            }
+            
+            const modelName = (document.title.split(': ')[1] || 'model').replace(/\s+/g, '_');
+            const fileName = `${modelName}.py`;
+
+            const blob = new Blob([code], { type: 'text/x-python' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = fileName;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            closeExportModal();
+        });
+
+    </script>
+</body>
+</html>

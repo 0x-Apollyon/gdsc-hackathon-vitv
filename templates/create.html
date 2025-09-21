@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thinking Machines: Create project</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg-solid: #08141E;
+            --navbar-bg: rgba(15, 23, 42, 0.75);
+            --text-primary: #f8fafc;
+            --text-secondary: #cbd5e1;
+            --text-muted: #64748b;
+            --glass-btn-bg: rgba(30, 41, 59, 0.5);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --accent-color: #38bdf8;
+            --accent-hover: #0ea5e9;
+            --font-family: 'Inter', sans-serif;
+            --header-height: 80px;
+            --input-bg: rgba(30, 41, 59, 0.6);
+            --option-bg: rgba(15, 23, 42, 0.3);
+            --option-border: rgba(71, 85, 105, 0.3);
+            --option-hover-border: rgba(56, 189, 248, 0.6);
+            --dropdown-bg: rgba(15, 23, 42, 0.9);
+            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.12);
+            --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.15);
+            --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.25);
+        }
+
+        [data-theme="light"] {
+            --bg-solid: #ffffff;
+            --navbar-bg: rgba(255, 255, 255, 0.75);
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
+            --text-muted: #64748b;
+            --glass-btn-bg: rgba(248, 250, 252, 0.8);
+            --glass-border: rgba(0, 0, 0, 0.06);
+            --input-bg: rgba(255, 255, 255, 0.8);
+            --option-bg: rgba(248, 250, 252, 0.2);
+            --option-border: rgba(226, 232, 240, 0.5);
+            --option-hover-border: rgba(56, 189, 248, 0.4);
+            --dropdown-bg: rgba(255, 255, 255, 0.95);
+            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
+            --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+            --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        * { 
+            margin: 0; 
+            padding: 0; 
+            box-sizing: border-box; 
+        }
+        
+        body {
+            font-family: var(--font-family);
+            background-color: var(--bg-solid);
+            color: var(--text-primary);
+            min-height: 100vh;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-feature-settings: 'kern' 1;
+            text-rendering: optimizeLegibility;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Navbar */
+        header {
+            position: sticky; 
+            top: 0; 
+            width: 100%; 
+            z-index: 1000;
+            background: var(--navbar-bg); 
+            backdrop-filter: blur(12px); 
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--glass-border); 
+            height: var(--header-height);
+            display: flex; 
+            align-items: center;
+        }
+        
+        .navbar-content {
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center;
+            width: 100%; 
+            max-width: 1440px; 
+            margin: 0 auto; 
+            padding: 0 2rem;
+        }
+        
+        .logo { 
+            display: flex; 
+            align-items: center; 
+            gap: 0.75rem; 
+            font-weight: 500; 
+            font-size: 1.1rem; 
+        }
+        
+        .logo img { 
+            height: 50px; 
+            width: auto; 
+        }
+        
+        .header-actions { 
+            display: flex; 
+            align-items: center; 
+            gap: 1rem; 
+        }
+        
+        .btn {
+            display: inline-flex; 
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.75rem; 
+            border-radius: 50px;
+            font-weight: 500; 
+            white-space: nowrap; 
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            color: var(--text-primary);
+            cursor: pointer; 
+            border: none; 
+            font-family: inherit;
+            text-decoration: none;
+            font-size: 0.875rem;
+        }
+        
+        .glass-btn {
+            background: var(--glass-btn-bg); 
+            border: 1px solid var(--glass-border);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(12px);
+        }
+        
+        .glass-btn:hover {
+            background: rgba(255, 255, 255, 0.15); 
+            transform: translateY(-3px) scale(1.03);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+        }
+
+        .theme-toggle {
+            background: none;
+            border: none;
+            color: var(--text-primary);
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        .theme-toggle:hover {
+            background: var(--glass-btn-bg);
+        }
+        
+        .theme-icon {
+            width: 20px;
+            height: 20px;
+        }
+
+        /* Main Container */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 3rem 2rem;
+        }
+
+        .page-title {
+            font-size: 1.875rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.75rem;
+            letter-spacing: -0.025em;
+        }
+
+        .page-description {
+            color: var(--text-secondary);
+            font-size: 1.125rem;
+            line-height: 1.6;
+            margin-bottom: 2.5rem;
+        }
+
+        /* Action Buttons */
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 3rem;
+        }
+
+        .primary-btn {
+            background: var(--accent-color);
+            color: #ffffff;
+            padding: 0.875rem 1.75rem;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 0.875rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            text-decoration: none;
+            border: 1px solid transparent;
+            cursor: pointer;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .primary-btn:hover:not(:disabled) {
+            background: var(--accent-hover);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .primary-btn:disabled {
+            background: var(--glass-btn-bg);
+            color: var(--text-muted);
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+            border: 1px solid var(--glass-border);
+        }
+
+        .secondary-btn {
+            background: var(--glass-btn-bg);
+            backdrop-filter: blur(12px);
+            color: var(--text-primary);
+            padding: 0.875rem 1.75rem;
+            border-radius: 50px;
+            font-weight: 500;
+            font-size: 0.875rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            text-decoration: none;
+            border: 1px solid var(--glass-border);
+            cursor: pointer;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .secondary-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        /* Form Section */
+        .form-section {
+            margin-bottom: 3rem;
+        }
+
+        .form-label {
+            display: block;
+            font-weight: 500;
+            font-size: 0.875rem;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+            letter-spacing: -0.01em;
+        }
+
+        .form-input {
+            width: 100%;
+            background: var(--input-bg);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 1rem 1.25rem;
+            color: var(--text-primary);
+            font-size: 0.875rem;
+            transition: all 0.2s ease;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.1);
+        }
+
+        .form-input::placeholder {
+            color: var(--text-muted);
+        }
+
+        /* Model Selection Layout */
+        .model-sections {
+            display: flex;
+            gap: 2.5rem;
+            margin-top: 1.5rem;
+            align-items: stretch;
+        }
+
+        .model-column {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .model-section-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 1.5rem;
+            letter-spacing: -0.02em;
+        }
+
+        .model-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+            flex-grow: 1;
+        }
+
+        .model-option {
+            background: var(--option-bg);
+            border: 1px solid var(--option-border);
+            border-radius: 16px;
+            padding: 1.5rem;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .model-option:hover {
+            border-color: var(--option-hover-border);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .model-option.selected {
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.15);
+        }
+
+        .model-option-content {
+            flex-grow: 1;
+        }
+
+        .model-option-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .model-option-icon {
+            width: 20px;
+            height: 20px;
+            color: var(--accent-color);
+            flex-shrink: 0;
+        }
+
+        .model-option-title {
+            font-weight: 600;
+            font-size: 1.125rem;
+            color: var(--text-primary);
+        }
+
+        .model-option-description {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            line-height: 1.5;
+            margin-bottom: 1rem;
+        }
+
+        /* Dropdown */
+        .dropdown-container {
+            position: relative;
+            margin-top: auto;
+            padding-top: 1rem;
+        }
+
+        .dropdown-button {
+            width: 100%;
+            background: var(--glass-btn-bg);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            border-radius: 10px;
+            padding: 0.75rem 1rem;
+            color: var(--text-primary);
+            font-size: 0.875rem;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.2s ease;
+        }
+        
+        .dropdown-button span {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .dropdown-button:hover {
+            border-color: var(--accent-color);
+        }
+
+        .dropdown-button.active {
+            border-color: var(--accent-color);
+        }
+
+        .dropdown-arrow {
+            width: 16px;
+            height: 16px;
+            transition: transform 0.2s ease;
+        }
+
+        .dropdown-button.active .dropdown-arrow {
+            transform: rotate(180deg);
+        }
+
+        .dropdown-menu {
+            position: absolute;
+            bottom: 100%;
+            left: 0;
+            right: 0;
+            background: var(--dropdown-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 10px;
+            box-shadow: var(--shadow-lg);
+            z-index: 100;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(10px);
+            transition: all 0.2s ease;
+            margin-bottom: 0.5rem;
+        }
+
+        .dropdown-menu.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .dropdown-item {
+            padding: 1rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border-bottom: 1px solid var(--option-border);
+        }
+
+        .dropdown-item:last-child {
+            border-bottom: none;
+        }
+
+        .dropdown-item:hover {
+            background: rgba(56, 189, 248, 0.1);
+        }
+
+        .dropdown-item-title {
+            font-weight: 500;
+            color: var(--text-primary);
+            margin-bottom: 0.25rem;
+        }
+
+        .dropdown-item-desc {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            line-height: 1.4;
+        }
+
+        /* Feature List */
+        .feature-list {
+            list-style: none;
+            margin-top: 0.5rem;
+        }
+
+        .feature-list li {
+            font-size: 0.8125rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.25rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .feature-list li::before {
+            content: "•";
+            color: var(--accent-color);
+            font-weight: bold;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .navbar-content { padding: 0 1rem; }
+            .container { padding: 2rem 1rem; }
+            .action-buttons { flex-direction: column; }
+            .model-sections { flex-direction: column; gap: 2.5rem; }
+        }
+
+        .theme-icon.hidden { display: none; }
+        svg { stroke-width: 2; fill: none; }
+
+        a { 
+    color: inherit; 
+    text-decoration: none !important; 
+    }
+
+    a:hover, a:focus, a:active, a:visited { 
+    text-decoration: none !important; 
+    }
+
+    .logo-light,
+        [data-theme="dark"] .logo-dark {
+            display: block;
+        }
+
+    .logo-dark,
+    [data-theme="dark"] .logo-light {
+        display: none;
+    }
+
+    </style>
+</head>
+<body data-theme="dark">
+
+    <header>
+        <div class="navbar-content">
+            <a href="/" class="logo">
+                <img src="/static/logo.png" alt="Thinking Machines Logo" class="logo-dark">
+                <img src="/static/logo2.png" alt="Thinking Machines Logo" class="logo-light">
+                <span>Thinking Machines</span>
+            </a>
+            <div class="header-actions">
+                <a href="/" class="btn glass-btn">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                        <polyline points="9 22 9 12 15 12 15 22"/>
+                    </svg>
+                    Home
+                </a>
+                <button class="theme-toggle" id="themeToggle">
+                    <svg class="theme-icon sun-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <circle cx="12" cy="12" r="5"/>
+                        <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+                    </svg>
+                    <svg class="theme-icon moon-icon hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <h1 class="page-title">Think → Build → Deploy</h1>
+        <p class="page-description">Name your model, start on a blank slate or pick a prebuilt model to experiment with. Still confused ? Watch our beginner friendly demo and dive right in.</p>
+        
+        <div class="action-buttons">
+            <button class="primary-btn" id="startBuildingBtn" disabled>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <path d="M4 20l1.8-5.4a9 9 0 0 1 6.3-6.3L17 4l3 3-4.3 4.9a9 9 0 0 1-6.3 6.3z"/>
+                    <path d="M9 15l-3 3"/>
+                    <path d="M15 9l-3 3"/>
+                </svg>
+                Start Building
+            </button>
+            <button class="secondary-btn">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <polygon points="5 3 19 12 5 21 5 3"/>
+                </svg>
+                Quick Demo
+            </button>
+        </div>
+
+        <div class="form-section">
+            <label class="form-label" for="projectName">Project name</label>
+            <input type="text" id="projectName" class="form-input" placeholder="e.g. Customer Churn Predictor">
+        </div>
+
+        <div class="form-section">
+            <label class="form-label">Choose Model</label>
+            
+            <div class="model-sections">
+                <div class="model-column">
+                    <h2 class="model-section-title">MLP</h2>
+                    <div class="model-grid">
+                        <div class="model-option" data-model="mlp-blank">
+                            <div class="model-option-content">
+                                <div class="model-option-header">
+                                    <svg class="model-option-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                                        <polyline points="14 2 14 8 20 8"/>
+                                    </svg>
+                                    <span class="model-option-title">Blank Canvas</span>
+                                </div>
+                                <p class="model-option-description">Start with an empty workspace and build your neural network from scratch</p>
+                                <ul class="feature-list">
+                                    <li>Drag-and-drop layer builder</li>
+                                    <li>Custom architecture design</li>
+                                    <li>Full parameter control</li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <div class="model-option" data-model="mlp-template">
+                            <div class="model-option-content">
+                                <div class="model-option-header">
+                                    <svg class="model-option-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                        <rect x="3" y="3" width="7" height="7"/>
+                                        <rect x="14" y="3" width="7" height="7"/>
+                                        <rect x="14" y="14" width="7" height="7"/>
+                                        <rect x="3" y="14" width="7" height="7"/>
+                                    </svg>
+                                    <span class="model-option-title">Pre-built MLP</span>
+                                </div>
+                                <p class="model-option-description">Optimized multilayer perceptron with proven architectures</p>
+                            </div>
+                            <div class="dropdown-container">
+                                <button class="dropdown-button" data-dropdown-id="mlp-dropdown">
+                                    <span>Choose a template</span>
+                                    <svg class="dropdown-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                        <polyline points="6 9 12 15 18 9"/>
+                                    </svg>
+                                </button>
+                                <div class="dropdown-menu" id="mlp-dropdown">
+                                    <div class="dropdown-item" data-template-name="Iris Classification">
+                                        <div class="dropdown-item-title">Iris Classification</div>
+                                        <div class="dropdown-item-desc">Classic 3-layer MLP for flower species classification. Perfect for beginners.</div>
+                                    </div>
+                                    <div class="dropdown-item" data-template-name="MNIST Digit Recognition">
+                                        <div class="dropdown-item-title">MNIST Digit Recognition</div>
+                                        <div class="dropdown-item-desc">Deep MLP optimized for handwritten digit recognition with dropout regularization.</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="model-column">
+                    <h2 class="model-section-title">Transformer</h2>
+                    <div class="model-grid">
+                        <div class="model-option" data-model="transformer-blank">
+                            <div class="model-option-content">
+                                <div class="model-option-header">
+                                    <svg class="model-option-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                                        <polyline points="14 2 14 8 20 8"/>
+                                    </svg>
+                                    <span class="model-option-title">Blank Canvas</span>
+                                </div>
+                                <p class="model-option-description">Design your own transformer architecture with attention mechanisms</p>
+                                <ul class="feature-list">
+                                    <li>Multi-head attention builder</li>
+                                    <li>Custom encoder-decoder stacks</li>
+                                    <li>Positional encoding options</li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <div class="model-option" data-model="transformer-template">
+                            <div class="model-option-content">
+                                <div class="model-option-header">
+                                    <svg class="model-option-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                        <rect x="3" y="3" width="7" height="7" rx="1"/>
+                                        <rect x="14" y="3" width="7" height="7" rx="1"/>
+                                        <rect x="3" y="14" width="7" height="7" rx="1"/>
+                                        <rect x="14" y="14" width="7" height="7" rx="1"/>
+                                    </svg>
+                                    <span class="model-option-title">Pre-built Transformer</span>
+                                </div>
+                                <p class="model-option-description">Ready-made transformer models with proven performance</p>
+                            </div>
+                            <div class="dropdown-container">
+                                <button class="dropdown-button" data-dropdown-id="transformer-dropdown">
+                                    <span>Choose a template</span>
+                                    <svg class="dropdown-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                        <polyline points="6 9 12 15 18 9"/>
+                                    </svg>
+                                </button>
+                                <div class="dropdown-menu" id="transformer-dropdown">
+                                    <div class="dropdown-item" data-template-name="Karpathy's mini LM">
+                                        <div class="dropdown-item-title">Karpathy's mini LM</div>
+                                        <div class="dropdown-item-desc">Lightweight language model inspired by Andrej Karpathy's tutorials. Great for text generation.</div>
+                                    </div>
+                                    <div class="dropdown-item" data-template-name="BERT">
+                                        <div class="dropdown-item-title">BERT</div>
+                                        <div class="dropdown-item-desc">Bidirectional Encoder Representations from Transformers for text understanding tasks.</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const appState = {
+            projectName: '',
+            selectedModel: null,
+        };
+
+        const themeToggle = document.getElementById('themeToggle');
+        const sunIcon = document.querySelector('.sun-icon');
+        const moonIcon = document.querySelector('.moon-icon');
+        const body = document.body;
+        
+        const projectNameInput = document.getElementById('projectName');
+        const startBuildingBtn = document.getElementById('startBuildingBtn');
+        const modelOptions = document.querySelectorAll('.model-option');
+        const dropdownButtons = document.querySelectorAll('.dropdown-button');
+        const dropdownItems = document.querySelectorAll('.dropdown-item');
+
+        function validateAndToggleButton() {
+            const isProjectNameValid = appState.projectName.trim() !== '';
+            const isModelSelected = appState.selectedModel !== null;
+            startBuildingBtn.disabled = !(isProjectNameValid && isModelSelected);
+        }
+        
+        function clearAllSelections() {
+            modelOptions.forEach(opt => opt.classList.remove('selected'));
+            dropdownButtons.forEach(btn => {
+                btn.querySelector('span').textContent = 'Choose a template';
+            });
+            appState.selectedModel = null;
+        }
+
+        function closeAllDropdowns() {
+            document.querySelectorAll('.dropdown-menu').forEach(menu => {
+                menu.classList.remove('show');
+                if (menu.previousElementSibling) {
+                    menu.previousElementSibling.classList.remove('active');
+                }
+            });
+        }
+
+        themeToggle.addEventListener('click', () => {
+            const newTheme = body.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+            body.setAttribute('data-theme', newTheme);
+            sunIcon.classList.toggle('hidden', newTheme === 'light');
+            moonIcon.classList.toggle('hidden', newTheme === 'dark');
+        });
+
+        projectNameInput.addEventListener('input', (e) => {
+            appState.projectName = e.target.value;
+            validateAndToggleButton();
+        });
+
+        modelOptions.forEach(option => {
+            option.addEventListener('click', (e) => {
+                if (e.target.closest('.dropdown-container')) return;
+
+                const modelType = option.dataset.model;
+                clearAllSelections();
+                option.classList.add('selected');
+
+                if (modelType.includes('blank')) {
+                    appState.selectedModel = modelType;
+                }
+                
+                validateAndToggleButton();
+            });
+        });
+
+        dropdownButtons.forEach(button => {
+            button.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const dropdownId = button.dataset.dropdownId;
+                const dropdownMenu = document.getElementById(dropdownId);
+                const isActive = dropdownMenu.classList.contains('show');
+                
+                closeAllDropdowns();
+
+                if (!isActive) {
+                    dropdownMenu.classList.add('show');
+                    button.classList.add('active');
+                }
+            });
+        });
+        
+        dropdownItems.forEach(item => {
+            item.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const parentOption = item.closest('.model-option');
+                const dropdownButton = parentOption.querySelector('.dropdown-button');
+                const templateName = item.dataset.templateName;
+
+                clearAllSelections();
+                parentOption.classList.add('selected');
+                dropdownButton.querySelector('span').textContent = templateName;
+                
+                appState.selectedModel = `${parentOption.dataset.model}-${templateName.replace(/\s+/g, '-').toLowerCase()}`;
+                
+                closeAllDropdowns();
+                validateAndToggleButton();
+            });
+        });
+        
+        document.addEventListener('click', closeAllDropdowns);
+
+        startBuildingBtn.addEventListener('click', () => {
+            if (startBuildingBtn.disabled) return;
+
+            const projectName = appState.projectName.trim();
+            // URL encode to handle spaces and special characters
+            const encodedProjectName = encodeURIComponent(projectName);
+
+            if (appState.selectedModel === 'mlp-blank') {
+                window.location.href = `/mlp-editor/${encodedProjectName}`;
+            } else if (appState.selectedModel === 'transformer-blank') {
+                window.location.href = `/transformer-editor/${encodedProjectName}`;
+            }
+            // Other cases (e.g., templates) will not trigger a redirect based on the current request.
+        });
+
+        document.querySelector('.secondary-btn').addEventListener('click', () => {
+            console.log('Starting demo');
+        });
+        
+        validateAndToggleButton();
+    });
+    </script>
+
+</body>
+</html>
