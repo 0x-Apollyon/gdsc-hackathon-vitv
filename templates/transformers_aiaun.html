@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Thinking Machines: Transformer {{ model_name }}</title>
+    <title>Thinking Machines: Transformer {{ model_name }} | Attention is all you need</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -254,7 +254,6 @@
         .dropped-component .component-details, .dropped-action .action-details { font-size: 0.75rem; color: var(--text-secondary); line-height: 1.5; margin-top: 0.5rem; text-align: center; }
         .dropped-action .action-details { margin-top: 0; text-align: left;}
         
-        /* UPDATED: Professional visual styles for Transformer components */
         .dropped-component[data-component-type="encoder"], .dropped-component[data-component-type="decoder"] {
             width: 120px;
             min-height: 200px;
@@ -271,7 +270,7 @@
         }
         .matrix-cell {
             width: 100%;
-            padding-bottom: 100%; /* Creates a square aspect ratio */
+            padding-bottom: 100%; 
             border-radius: 4px;
             opacity: 0.8;
             transition: all 0.2s ease;
@@ -373,7 +372,6 @@
         .confirm-btn-delete:hover { background: var(--danger-hover); }
         .confirm-btn-cancel { background: var(--component-bg); border: 1px solid var(--component-border); }
         
-        /* Attributes Panel */
         .attributes-panel {
             position: absolute; right: 0; top: 0; bottom: 0;
             width: 320px; background-color: var(--panel-bg);
@@ -412,7 +410,6 @@
             min-height: 150px;
         }
         
-        /* UPDATED: Professional Analytics Attributes Styles */
         .form-group.switch-group {
             display: flex;
             justify-content: space-between;
@@ -454,7 +451,6 @@
             box-shadow: inset 0 1px 2px rgba(0,0,0,0.1);
         }
 
-        /* Export Modal Styles */
         .export-overlay {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -608,7 +604,6 @@
 
         #downloadCodeBtn { background-color: #22c55e; color: white; }
 
-        /* NEW/UPDATED Professional Spinner */
         #export-loading-step {
             display: flex;
             flex-direction: column;
@@ -659,7 +654,6 @@
         #export-download-step h4 { font-size: 1.1rem; margin-bottom: 0.5rem; color: var(--text-primary); }
         #export-download-step p { color: var(--text-secondary); }
     
-        /* NEW: Logo Theming Rules */
         .logo-light,
         [data-theme="dark"] .logo-dark {
             display: block;
@@ -677,7 +671,7 @@
             <div class="logo">
                 <img src="/static/logo.png" alt="Thinking Machines Logo" class="logo-dark">
                 <img src="/static/logo2.png" alt="Thinking Machines Logo" class="logo-light">
-                <span>Transformer: {{ model_name }}</span>
+                <span>Transformer: {{ model_name }} | Attention is all you need</span>
             </div>
             <div class="header-actions">
                 <button class="btn glass-btn" id="exportBtn">
@@ -734,7 +728,7 @@
                     <div class="action-item" draggable="true" data-action-type="generate-text"><svg class="action-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg><div class="action-info"><h4>Generate Text</h4><p>Create text from a prompt.</p></div></div>
                     <div class="action-item" draggable="true" data-action-type="analytics"><svg class="action-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg><div class="action-info"><h4>Display Analytics</h4><p>Show model metrics</p></div></div>
                     <div class="action-item" draggable="true" data-action-type="notify"><svg class="action-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="m13.73 21a2 2 0 0 1-3.46 0"/></svg><div class="action-info"><h4>Notify</h4><p>Send notifications</p></div></div>
-                    <div class="action-item" draggable="true" data-action-type="custom"><svg class="action-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg><div class="action-info"><h4>Custom Action</h4><p>Define custom logic</p></div></div>
+                    <div class="action-item" draggable="true" data-action-type="custom"><svg class="action-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l-.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg><div class="action-info"><h4>Custom Action</h4><p>Define custom logic</p></div></div>
                 </div>
             </div>
             <div class="canvas-container" id="canvasContainer">
@@ -909,6 +903,57 @@
             'custom': { customCode: '# Your custom Python code here\nprint("Executing custom action...")', notes: '' }
         };
 
+        // MODIFIED: This function pre-populates the UI with the new specified template
+        function initializeAndPopulateUI() {
+            // Hide placeholders
+            dropZone.style.display = 'none';
+            const workflowPlaceholder = workflowCanvas.querySelector('.workflow-placeholder');
+            if (workflowPlaceholder) workflowPlaceholder.style.display = 'none';
+
+            // Define the new components and their properties
+            const componentsData = [
+                { id: 'init-data-1', type: 'data', attributes: { vocabSize: 37000 }, pos: { left: '100px', top: '150px' } },
+                { id: 'init-input-1', type: 'input', attributes: { embeddingDim: 512 }, pos: { left: '320px', top: '150px' } },
+                { id: 'init-encoder-1', type: 'encoder', attributes: { numLayers: 6, numHeads: 8 }, pos: { left: '540px', top: '150px' } },
+                { id: 'init-attn-1', type: 'attention', attributes: { numHeads: 8 }, pos: { left: '760px', top: '150px' } },
+                { id: 'init-decoder-1', type: 'decoder', attributes: { numLayers: 6, numHeads: 8 }, pos: { left: '980px', top: '150px' } },
+                { id: 'init-output-1', type: 'output', attributes: { temperature: 0.7, activation: 'Softmax' }, pos: { left: '1200px', top: '150px' } }
+            ];
+
+            // Create and position model components
+            componentsData.forEach(data => {
+                const fullAttributes = { ...defaultAttributes[data.type], ...data.attributes };
+                const el = createDroppedComponent(0, 0, data.type, fullAttributes, data.id);
+                el.style.left = data.pos.left;
+                el.style.top = data.pos.top;
+            });
+            
+            // Create and position the new training action
+            const trainAttrs = { ...defaultAttributes['train'], epochs: 18, optimizer: 'AdamW', learningRate: 0.0005, batchSize: 25000 };
+            const trainAction = createDroppedAction(0, 0, 'train', trainAttrs, 'init-train-1');
+            trainAction.style.left = '150px';
+            trainAction.style.top = '100px';
+
+            // Batch connections for the new architecture
+            jsPlumbInstanceCanvas.batch(() => {
+                jsPlumbInstanceCanvas.connect({ source: 'init-data-1', target: 'init-input-1', anchors: ["Right", "Left"] });
+                jsPlumbInstanceCanvas.connect({ source: 'init-input-1', target: 'init-encoder-1', anchors: ["Right", "Left"] });
+                jsPlumbInstanceCanvas.connect({ source: 'init-encoder-1', target: 'init-attn-1', anchors: ["Right", "Left"] });
+                jsPlumbInstanceCanvas.connect({ source: 'init-attn-1', target: 'init-decoder-1', anchors: ["Right", "Left"] });
+                jsPlumbInstanceCanvas.connect({ source: 'init-decoder-1', target: 'init-output-1', anchors: ["Right", "Left"] });
+            });
+            
+            // Save this initial state for undo/redo
+            saveCanvasState();
+            saveWorkflowState();
+            
+            // Center the view on the new components
+            modelCanvas.scrollTop = 50; 
+            modelCanvas.scrollLeft = 50;
+            workflowCanvasWrapper.scrollTop = 20;
+            workflowCanvasWrapper.scrollLeft = 50;
+        }
+
         jsPlumb.ready(() => {
             jsPlumbInstanceCanvas = jsPlumb.getInstance({
                 Connector: ["Bezier", { curviness: 60 }],
@@ -949,12 +994,7 @@
             jsPlumbInstanceWorkflow.bind("connection", (info, originalEvent) => { if (originalEvent) saveWorkflowState(); });
             jsPlumbInstanceWorkflow.bind("connectionDetached", (info, originalEvent) => { if (originalEvent) saveWorkflowState(); });
 
-            saveCanvasState();
-            saveWorkflowState();
-            modelCanvas.scrollTop = (canvas.clientHeight - modelCanvas.clientHeight) / 2;
-            modelCanvas.scrollLeft = (canvas.clientWidth - modelCanvas.clientWidth) / 2;
-            workflowCanvasWrapper.scrollTop = (workflowCanvas.clientHeight - workflowCanvasWrapper.clientHeight) / 2;
-            workflowCanvasWrapper.scrollLeft = (workflowCanvas.clientWidth - workflowCanvasWrapper.clientWidth) / 2;
+            initializeAndPopulateUI();
         });
         
         document.getElementById('themeToggle').addEventListener('click', () => {

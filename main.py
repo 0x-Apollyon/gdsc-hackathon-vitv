@@ -5,6 +5,7 @@ import json
 import datetime
 from markupsafe import Markup
 import time
+import transformer_parser
 
 
 app = Flask(__name__)
@@ -280,6 +281,29 @@ def create():
 def mlp_editor(model_name):
     return render_template('workspace_mlp.html' , model_name=model_name)
 
+@app.route("/transformer-editor/<model_name>", methods=['GET'])
+def transformer_editor(model_name):
+    return render_template('workspace_transformers.html' , model_name=model_name)
+
+@app.route("/transformer-editor/prebuilt1/<model_name>", methods=['GET'])
+def prebuilt_transformer_1(model_name):
+    return render_template('transformers_karpathy.html' , model_name=model_name)
+
+@app.route("/transformer-editor/prebuilt2/<model_name>", methods=['GET'])
+def prebuilt_transformer_2(model_name):
+    return render_template('transformers_aiaun.html' , model_name=model_name)
+
+@app.route("/generate-code-transformer", methods=['POST'])
+def generate_code_transformer():
+    raw_data = request.data.decode("utf-8")
+
+    #this is a temporary hack
+    #the frontend expects pytorch code as we were planning to make it in pytorch initially
+    #however we couldnt and now it uses keras, instead of editing 10 places in the frontend we just changed here
+    return jsonify({
+            "pytorch_code": transformer_parser.process_json(json.loads(raw_data))
+        }) , 200
+
 @app.route("/generate-code-mlp", methods=['POST'])
 def generate_code_mlp():
     raw_data = request.data.decode("utf-8")
@@ -287,7 +311,7 @@ def generate_code_mlp():
 
     return jsonify({
             "keras_code": process_json(json.loads(raw_data))
-        })
+        }) , 200
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=1000, debug=True) 

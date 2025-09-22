@@ -678,9 +678,9 @@
                                         <div class="dropdown-item-title">Karpathy's mini LM</div>
                                         <div class="dropdown-item-desc">Lightweight language model inspired by Andrej Karpathy's tutorials. Great for text generation.</div>
                                     </div>
-                                    <div class="dropdown-item" data-template-name="BERT">
-                                        <div class="dropdown-item-title">BERT</div>
-                                        <div class="dropdown-item-desc">Bidirectional Encoder Representations from Transformers for text understanding tasks.</div>
+                                    <div class="dropdown-item" data-template-name="OG Transformer">
+                                        <div class="dropdown-item-title">OG Transformer</div>
+                                        <div class="dropdown-item-desc">The original transformer from the famous "Attention is all you need" paper</div>
                                     </div>
                                 </div>
                             </div>
@@ -807,8 +807,12 @@
                 window.location.href = `/mlp-editor/${encodedProjectName}`;
             } else if (appState.selectedModel === 'transformer-blank') {
                 window.location.href = `/transformer-editor/${encodedProjectName}`;
+            } else if (appState.selectedModel === "transformer-template-karpathy's-mini-lm") {
+                window.location.href = `/transformer-editor/prebuilt1/${encodedProjectName}`;
+            } else if (appState.selectedModel === "transformer-template-og-transformer") {
+                window.location.href = `/transformer-editor/prebuilt2/${encodedProjectName}`;
             }
-            // Other cases (e.g., templates) will not trigger a redirect based on the current request.
+            // Other cases (e.g., MLP templates) will not trigger a redirect.
         });
 
         document.querySelector('.secondary-btn').addEventListener('click', () => {

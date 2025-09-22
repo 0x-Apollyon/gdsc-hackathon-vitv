@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Thinking Machines: Transformer {{ model_name }}</title>
+    <title>Thinking Machines: Transformer {{model_name}} | Karpathy's Mini LM</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -677,7 +677,7 @@
             <div class="logo">
                 <img src="/static/logo.png" alt="Thinking Machines Logo" class="logo-dark">
                 <img src="/static/logo2.png" alt="Thinking Machines Logo" class="logo-light">
-                <span>Transformer: {{ model_name }}</span>
+                <span>Transformer: {{model_name}} | Karpathy's Mini LM </span>
             </div>
             <div class="header-actions">
                 <button class="btn glass-btn" id="exportBtn">
@@ -734,7 +734,7 @@
                     <div class="action-item" draggable="true" data-action-type="generate-text"><svg class="action-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg><div class="action-info"><h4>Generate Text</h4><p>Create text from a prompt.</p></div></div>
                     <div class="action-item" draggable="true" data-action-type="analytics"><svg class="action-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg><div class="action-info"><h4>Display Analytics</h4><p>Show model metrics</p></div></div>
                     <div class="action-item" draggable="true" data-action-type="notify"><svg class="action-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="m13.73 21a2 2 0 0 1-3.46 0"/></svg><div class="action-info"><h4>Notify</h4><p>Send notifications</p></div></div>
-                    <div class="action-item" draggable="true" data-action-type="custom"><svg class="action-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg><div class="action-info"><h4>Custom Action</h4><p>Define custom logic</p></div></div>
+                    <div class="action-item" draggable="true" data-action-type="custom"><svg class="action-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l-.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg><div class="action-info"><h4>Custom Action</h4><p>Define custom logic</p></div></div>
                 </div>
             </div>
             <div class="canvas-container" id="canvasContainer">
@@ -905,9 +905,59 @@
             'train': { epochs: 10, batchSize: 32, optimizer: 'AdamW', learningRate: 0.0001, notes: '' },
             'analytics': { bleuScore: true, perplexity: true, notes: '' },
             'generate-text': { prompt: 'Once upon a time', maxTokens: 100, notes: '' },
-            'notify': { notificationText: "Your model '{{ model_name }}' has finished training.", webhookUrl: '', notes: '' },
+            'notify': { notificationText: "Your model '{{model_name}}' has finished training.", webhookUrl: '', notes: '' },
             'custom': { customCode: '# Your custom Python code here\nprint("Executing custom action...")', notes: '' }
         };
+
+        function initializeAndPopulateUI() {
+            // Hide placeholders since the canvas will not be empty
+            dropZone.style.display = 'none';
+            const workflowPlaceholder = workflowCanvas.querySelector('.workflow-placeholder');
+            if (workflowPlaceholder) workflowPlaceholder.style.display = 'none';
+
+            // Define the components and their properties
+            const componentsData = [
+                { id: 'init-data-1', type: 'data', attributes: { vocabSize: 11451 }, pos: { left: '100px', top: '150px' } },
+                { id: 'init-input-1', type: 'input', attributes: { embeddingDim: 384 }, pos: { left: '320px', top: '150px' } },
+                { id: 'init-attn-1', type: 'attention', attributes: { numHeads: 6 }, pos: { left: '540px', top: '150px' } },
+                { id: 'init-decoder-1', type: 'decoder', attributes: { numHeads: 6, numLayers: 6 }, pos: { left: '760px', top: '150px' } },
+                { id: 'init-output-1', type: 'output', attributes: { temperature: 0.8, activation: 'Linear' }, pos: { left: '980px', top: '150px' } }
+            ];
+
+            // Create and position model components
+            componentsData.forEach(data => {
+                // Merge specified attributes with defaults to ensure all keys exist
+                const fullAttributes = { ...defaultAttributes[data.type], ...data.attributes };
+                const el = createDroppedComponent(0, 0, data.type, fullAttributes, data.id);
+                el.style.left = data.pos.left;
+                el.style.top = data.pos.top;
+            });
+            
+            // Create and position the training action
+            const trainAttrs = { ...defaultAttributes['train'], optimizer: 'AdamW', epochs: 10, learningRate: 0.0003, batchSize: 64 };
+            const trainAction = createDroppedAction(0, 0, 'train', trainAttrs, 'init-train-1');
+            trainAction.style.left = '150px';
+            trainAction.style.top = '100px';
+
+            // Batch connections to improve performance and avoid race conditions
+            jsPlumbInstanceCanvas.batch(() => {
+                // <!-- MODIFIED -->: Added specific anchors to ensure connections are from right-to-left
+                jsPlumbInstanceCanvas.connect({ source: 'init-data-1', target: 'init-input-1', anchors: ["Right", "Left"] });
+                jsPlumbInstanceCanvas.connect({ source: 'init-input-1', target: 'init-attn-1', anchors: ["Right", "Left"] });
+                jsPlumbInstanceCanvas.connect({ source: 'init-attn-1', target: 'init-decoder-1', anchors: ["Right", "Left"] });
+                jsPlumbInstanceCanvas.connect({ source: 'init-decoder-1', target: 'init-output-1', anchors: ["Right", "Left"] });
+            });
+            
+            // Now that everything is created, save this as the initial state for undo/redo
+            saveCanvasState();
+            saveWorkflowState();
+            
+            // Adjust the view to center the created components
+            modelCanvas.scrollTop = 50; 
+            modelCanvas.scrollLeft = 50;
+            workflowCanvasWrapper.scrollTop = 20;
+            workflowCanvasWrapper.scrollLeft = 50;
+        }
 
         jsPlumb.ready(() => {
             jsPlumbInstanceCanvas = jsPlumb.getInstance({
@@ -949,12 +999,7 @@
             jsPlumbInstanceWorkflow.bind("connection", (info, originalEvent) => { if (originalEvent) saveWorkflowState(); });
             jsPlumbInstanceWorkflow.bind("connectionDetached", (info, originalEvent) => { if (originalEvent) saveWorkflowState(); });
 
-            saveCanvasState();
-            saveWorkflowState();
-            modelCanvas.scrollTop = (canvas.clientHeight - modelCanvas.clientHeight) / 2;
-            modelCanvas.scrollLeft = (canvas.clientWidth - modelCanvas.clientWidth) / 2;
-            workflowCanvasWrapper.scrollTop = (workflowCanvas.clientHeight - workflowCanvasWrapper.clientHeight) / 2;
-            workflowCanvasWrapper.scrollLeft = (workflowCanvas.clientWidth - workflowCanvasWrapper.clientWidth) / 2;
+            initializeAndPopulateUI();
         });
         
         document.getElementById('themeToggle').addEventListener('click', () => {
