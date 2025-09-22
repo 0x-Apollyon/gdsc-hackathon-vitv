@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Draw Digit — Thinking Machines</title>
+
+<!-- Google Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+      --bg-solid: #08141E;
+      --navbar-bg: rgba(15, 23, 42, 0.75);
+      --glass-card-bg: rgba(15, 23, 42, 0.65);
+      --canvas-bg: #1E293B; /* slate-800 */
+      --text-primary: #f8fafc;
+      --text-secondary: #cbd5e1;
+      --glass-btn-bg: rgba(30, 41, 59, 0.5);
+      --glass-border: rgba(255, 255, 255, 0.1);
+      --font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --header-height: 80px;
+  }
+
+  /* --- Base & Reset --- */
+  * { 
+    margin: 0; 
+    padding: 0; 
+    box-sizing: border-box; 
+  }
+
+  html { 
+    scroll-behavior: smooth; 
+  }
+
+  body {
+      font-family: var(--font-family);
+      background-color: var(--bg-solid);
+      color: var(--text-primary);
+      overflow-x: hidden;
+      min-height: 100vh;
+  }
+
+  a { 
+    color: inherit; 
+    text-decoration: none; 
+  }
+
+  /* --- Page Wrapper for Fixed Background --- */
+  .page-wrapper {
+      position: relative;
+      z-index: 1;
+      background-image: url('/static/background4.jpg');
+      background-attachment: fixed;
+      background-position: center;
+      background-repeat: no-repeat;
+      background-size: cover;
+      min-height: 100vh;
+  }
+   /* A subtle overlay to darken the background image and improve text contrast */
+  .page-wrapper::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(8, 20, 30, 0.6);
+      z-index: -1;
+  }
+  
+  /* --- Header --- */
+  header {
+      position: sticky; top: 0; width: 100%; z-index: 1000;
+      background: var(--navbar-bg); 
+      backdrop-filter: blur(12px); 
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--glass-border); 
+      height: var(--header-height);
+      display: flex; 
+      align-items: center;
+  }
+
+  .navbar-content {
+      display: flex; justify-content: space-between; align-items: center;
+      width: 100%; max-width: 1440px; margin: 0 auto; padding: 0 2rem;
+  }
+
+  .logo { 
+    display: flex; align-items: center; gap: 0.75rem; 
+    font-weight: 500; font-size: 1.1rem; 
+  }
+  .logo img { height: 50px; width: auto; }
+
+  .desktop-nav { display: flex; gap: 2.5rem; }
+  .desktop-nav a { color: var(--text-secondary); font-weight: 500; transition: all 0.3s ease; }
+  .desktop-nav a:hover { color: var(--text-primary); transform: translateY(-2px); }
+  
+  /* --- Buttons --- */
+  .btn {
+      display: inline-block; padding: 0.75rem 1.75rem; border-radius: 50px;
+      font-weight: 500; white-space: nowrap; transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+      cursor: pointer; border: none; font-family: inherit; font-size: inherit;
+  }
+  .glass-btn {
+      background: var(--glass-btn-bg); border: 1px solid var(--glass-border);
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); color: var(--text-primary);
+  }
+  .glass-btn:hover {
+      background: rgba(255, 255, 255, 0.15); transform: translateY(-3px) scale(1.03);
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+  }
+  
+  /* --- Main App Container --- */
+  .app-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: calc(100vh - var(--header-height));
+    padding: 3rem 1rem;
+  }
+  
+  .app-header {
+      text-align: center;
+      margin-bottom: 2.5rem;
+  }
+
+  .app-header h1 {
+      font-size: 3rem;
+      font-weight: 600;
+      margin-bottom: 0.75rem;
+      text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+  }
+
+  .app-header p {
+      font-size: 1.1rem;
+      color: var(--text-secondary);
+      max-width: 700px;
+      line-height: 1.6;
+  }
+
+  .app-container {
+      display: flex;
+      gap: 2.5rem;
+      align-items: stretch;
+      flex-wrap: wrap;
+      justify-content: center;
+  }
+  
+  /* --- Glassmorphism Card Style --- */
+  .glass-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+    padding: 2rem;
+    background: var(--glass-card-bg);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-radius: 16px;
+    border: 1px solid var(--glass-border);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    width: 330px;
+  }
+
+  .glass-card h2 {
+    margin: 0;
+    color: var(--text-primary);
+    font-size: 1.3rem;
+    font-weight: 600;
+  }
+
+  /* --- Component Styling --- */
+  canvas {
+    border-radius: 8px;
+    border: 1px solid var(--glass-border);
+    cursor: crosshair;
+  }
+  
+  #drawCanvas {
+    background-color: var(--canvas-bg);
+  }
+  
+  #gridCanvas {
+    background-color: #000000;
+  }
+
+  .controls {
+    display: flex;
+    gap: 1rem;
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .controls .btn {
+      padding: 0.75rem 1rem;
+      flex-grow: 1;
+  }
+
+  /* --- Prediction Display Styling --- */
+  .prediction-display {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    width: 100%;
+    flex-grow: 1;
+    min-height: 280px;
+  }
+
+  #prediction-digit {
+    font-size: 10rem;
+    font-weight: 700;
+    line-height: 1;
+    color: var(--text-primary);
+    min-height: 160px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  #prediction-confidence {
+    font-size: 1.1rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+  }
+
+  textarea {
+    width: 280px;
+    height: 130px;
+    background-color: rgba(0,0,0,0.3);
+    color: var(--text-secondary);
+    border-radius: 8px;
+    border: 1px solid var(--glass-border);
+    padding: 12px;
+    font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+    font-size: 10px;
+    line-height: 1.4;
+    resize: none;
+  }
+
+  /* --- Responsive Design --- */
+  @media(max-width: 1100px){
+    .app-container { 
+      flex-direction: column; 
+      align-items: center; 
+      gap: 2rem; 
+    }
+  }
+
+  @media(max-width: 768px){
+    .desktop-nav, .header-actions .glass-btn { display: none; }
+    .app-section { padding: 2rem 1rem; }
+    .app-header h1 { font-size: 2.25rem; }
+    .glass-card { width: 100%; max-width: 330px; }
+  }
+
+</style>
+</head>
+<body>
+
+<div class="page-wrapper">
+  <header>
+      <div class="navbar-content">
+          <a href="/" class="logo">
+              <img src="/static/logo.png" alt="Thinking Machines Logo">
+              <span>Thinking Machines</span>
+          </a>
+          <nav class="desktop-nav">
+              <a href="#">How it Works</a>
+              <a href="#">Learn</a>
+          </nav>
+          <div class="header-actions">
+              <a href="#" class="btn glass-btn">Start Building</a>
+          </div>
+      </div>
+  </header>
+
+  <main>
+    <section class="app-section">
+      <div class="app-header">
+          <h1>Digit Recognizer</h1>
+          <p>Draw a single digit (0-9) in the left panel. Our machine learning model will guess the digit in real-time and show you the raw pixel data being sent to the server.</p>
+      </div>
+
+      <div class="app-container">
+        <!-- Input Card -->
+        <div class="glass-card">
+          <h2>Draw a Digit</h2>
+          <canvas id="drawCanvas" width="280" height="280"></canvas>
+          <div class="controls">
+            <button class="btn glass-btn" onclick="clearCanvas()">Clear</button>
+            <button class="btn glass-btn" onclick="saveCSV()">Save CSV</button>
+          </div>
+        </div>
+
+        <!-- Prediction Card -->
+        <div class="glass-card">
+          <h2>Model Prediction</h2>
+          <div class="prediction-display">
+            <div id="prediction-digit">?</div>
+            <p id="prediction-confidence">Draw to get a prediction</p>
+          </div>
+        </div>
+
+        <!-- Pixel Data Card -->
+        <div class="glass-card">
+          <h2>28×28 Pixel Data</h2>
+          <canvas id="gridCanvas" width="280" height="140"></canvas>
+          <textarea id="pixelData" readonly placeholder="Pixel values (0-255) sent to the model will appear here..."></textarea>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<script>
+const BG_R = 30;
+const BG_G = 41;
+const BG_B = 59;
+const FG_R = 248;
+const FG_G = 250;
+const FG_B = 252;
+const BG_AVG = (BG_R + BG_G + BG_B) / 3;
+const FG_AVG = (FG_R + FG_G + FG_B) / 3;
+const GRAY_RANGE = FG_AVG - BG_AVG;
+const CANVAS_SIZE = 280;
+const GRID_SIZE = 28;
+const CELL = CANVAS_SIZE / GRID_SIZE;
+const PEN_WIDTH = 20;
+
+const drawCanvas = document.getElementById("drawCanvas");
+const drawCtx = drawCanvas.getContext("2d", { willReadFrequently: true });
+const gridCanvas = document.getElementById("gridCanvas");
+const gridCtx = gridCanvas.getContext("2d");
+const predictionDigitElem = document.getElementById("prediction-digit");
+const predictionConfidenceElem = document.getElementById("prediction-confidence");
+const pixelDataElem = document.getElementById("pixelData");
+
+// Use fixed colors for better contrast and consistency
+const DRAW_CANVAS_BG = "#1E293B";
+const DRAW_PEN_COLOR = "#f8fafc";
+
+let drawing = false;
+let lastX = 0;
+let lastY = 0;
+let latestPixels = []; 
+let debounceTimer;
+
+// Initialize canvas
+function initCanvas() {
+    drawCtx.fillStyle = DRAW_CANVAS_BG;
+    drawCtx.fillRect(0, 0, CANVAS_SIZE, CANVAS_SIZE);
+    updatePixelGrid();
+}
+
+// Mouse events
+drawCanvas.addEventListener("mousedown", startDrawing);
+drawCanvas.addEventListener("mouseup", stopDrawing);
+drawCanvas.addEventListener("mouseout", stopDrawing);
+drawCanvas.addEventListener("mousemove", draw);
+
+// Touch events for mobile
+drawCanvas.addEventListener("touchstart", handleTouch, { passive: false });
+drawCanvas.addEventListener("touchend", handleTouchEnd, { passive: false });
+drawCanvas.addEventListener("touchmove", handleTouchMove, { passive: false });
+
+function startDrawing(e) {
+    drawing = true;
+    const rect = drawCanvas.getBoundingClientRect();
+    lastX = e.clientX - rect.left;
+    lastY = e.clientY - rect.top;
+}
+
+function stopDrawing() {
+    if (drawing) {
+        drawing = false;
+        updatePixelGrid();
+        getPrediction();
+    }
+}
+
+function handleTouch(e) {
+    e.preventDefault();
+    const touch = e.touches[0];
+    const rect = drawCanvas.getBoundingClientRect();
+    drawing = true;
+    lastX = touch.clientX - rect.left;
+    lastY = touch.clientY - rect.top;
+}
+
+function handleTouchEnd(e) {
+    e.preventDefault();
+    stopDrawing();
+}
+
+function handleTouchMove(e) {
+    e.preventDefault();
+    if (drawing) {
+        const touch = e.touches[0];
+        const rect = drawCanvas.getBoundingClientRect();
+        const mouseEvent = {
+            offsetX: touch.clientX - rect.left,
+            offsetY: touch.clientY - rect.top
+        };
+        draw(mouseEvent);
+    }
+}
+
+function draw(e) {
+    if (!drawing) return;
+    
+    drawCtx.strokeStyle = DRAW_PEN_COLOR;
+    drawCtx.lineWidth = PEN_WIDTH;
+    drawCtx.lineCap = "round";
+    drawCtx.lineJoin = "round";
+    drawCtx.beginPath();
+    drawCtx.moveTo(lastX, lastY);
+    drawCtx.lineTo(e.offsetX, e.offsetY);
+    drawCtx.stroke();
+    
+    lastX = e.offsetX;
+    lastY = e.offsetY;
+    
+    // Update pixel grid immediately for live feedback
+    updatePixelGrid();
+    
+    // Debounce prediction calls
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(getPrediction, 200);
+}
+
+function updatePixelGrid() {
+    const imgData = drawCtx.getImageData(0, 0, CANVAS_SIZE, CANVAS_SIZE);
+    const pixels = imgData.data;
+    const small = [];
+    
+    let pixelText = '';
+
+    for (let y = 0; y < GRID_SIZE; y++) {
+        const row = [];
+        for (let x = 0; x < GRID_SIZE; x++) {
+            let sum = 0;
+            let count = 0;
+            
+            // Sample pixels in this cell
+            for (let yy = 0; yy < CELL; yy++) {
+                for (let xx = 0; xx < CELL; xx++) {
+                    const pixelY = Math.floor(y * CELL + yy);
+                    const pixelX = Math.floor(x * CELL + xx);
+                    
+                    if (pixelY < CANVAS_SIZE && pixelX < CANVAS_SIZE) {
+                        const idx = (pixelY * CANVAS_SIZE + pixelX) * 4;
+                        // Convert RGB to grayscale and normalize
+                        const gray = (pixels[idx] + pixels[idx + 1] + pixels[idx + 2]) / 3;
+                        sum += gray;
+                        count++;
+                    }
+                }
+            }
+            
+            const avgGray = count > 0 ? sum / count : 0;
+            // Normalize to 0-1 range (assuming background is dark ~30 and foreground is light ~248)
+            const normalizedValue = Math.max(0, Math.min(1, (avgGray - BG_AVG) / GRAY_RANGE));
+            row.push(normalizedValue);
+        }
+        small.push(row);
+        pixelText += row.map(v => Math.round(v * 255).toString().padStart(3, ' ')).join(', ') + '\n';
+    }
+
+    latestPixels = small;
+    // Display pixel data in 0-255 format for visualization, but keep internal values normalized
+    pixelDataElem.value = pixelText.trim();
+
+    // Render the visualization grid
+    const gridCellWidth = gridCanvas.width / GRID_SIZE;
+    const gridCellHeight = gridCanvas.height / GRID_SIZE;
+    
+    gridCtx.fillStyle = "#000000";
+    gridCtx.fillRect(0, 0, gridCanvas.width, gridCanvas.height);
+    
+    for (let y = 0; y < GRID_SIZE; y++) {
+        for (let x = 0; x < GRID_SIZE; x++) {
+            const gray = Math.round(small[y][x] * 255);
+            gridCtx.fillStyle = `rgb(${gray},${gray},${gray})`;
+            gridCtx.fillRect(
+                x * gridCellWidth, 
+                y * gridCellHeight, 
+                gridCellWidth, 
+                gridCellHeight
+            );
+        }
+    }
+}
+
+function resetPrediction() {
+    predictionDigitElem.textContent = '?';
+    predictionConfidenceElem.textContent = 'Draw to get a prediction';
+}
+
+function clearCanvas() {
+    drawCtx.fillStyle = DRAW_CANVAS_BG;
+    drawCtx.fillRect(0, 0, CANVAS_SIZE, CANVAS_SIZE);
+    resetPrediction();
+    updatePixelGrid();
+}
+
+// Mock prediction function for demonstration
+// In a real app, this would make an API call to your ML model
+async function getPrediction() {
+    if (!latestPixels.length) return;
+
+    // Check if canvas is essentially empty
+    const totalIntensity = latestPixels.flat().reduce((sum, val) => sum + val, 0);
+    if (totalIntensity < 0.01) {
+        resetPrediction();
+        return;
+    }
+    
+    predictionConfidenceElem.textContent = 'Thinking...';
+
+    // Prepare data in MNIST format - send normalized values (0.0 to 1.0)
+    const pixelArray = latestPixels.flat(); // This gives us 784 values between 0.0 and 1.0
+    
+    console.log("Sending MNIST data:", pixelArray.slice(0, 10), "..."); // Debug first 10 values
+
+    try {
+        const response = await fetch('/guess-number', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(pixelArray) // Send as simple array of 784 normalized values
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        console.log("Received data:", data);
+
+        predictionDigitElem.textContent = data.predicted_number;
+        const confidencePercent = Math.min(data.confidence, 1.0) * 100;
+        predictionConfidenceElem.textContent = `Confidence: ${confidencePercent.toFixed(1)}%`;
+
+    } catch (error) {
+        console.error("Prediction failed:", error);
+        predictionDigitElem.textContent = '!';
+        predictionConfidenceElem.textContent = 'Connection Error';
+    }
+}
+
+// Remove the mock prediction function since we're now using real API calls
+
+function saveCSV() {
+    if (!latestPixels.length || latestPixels.flat().every(p => p < 0.01)) {
+        alert("Canvas is empty. Please draw a digit first.");
+        return;
+    }
+    
+    // Save in MNIST format - normalized values between 0.0 and 1.0
+    const pixelValues = latestPixels.flat(); // 784 normalized values
+    const csvContent = pixelValues.join(',') + '\n';
+
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `mnist_digit_${Date.now()}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(link.href);
+}
+
+// Initialize the app
+initCanvas();
+</script>
+</body>
+</html>

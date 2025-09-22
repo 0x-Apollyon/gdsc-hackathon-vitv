@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Thinking Machines: Transformer {{ model_name }} | Attention is all you need</title>
+    <title>Thinking Machines: MLP {{ model_name }}</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -32,17 +32,15 @@
             --component-border: rgba(0, 0, 0, 0.1);
             --component-hover-border: #3b82f6;
             --action-bg: #f8fafc;
+            --layer-visual-bg: rgba(0, 0, 0, 0.02);
             --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.05);
             --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.1);
             --shadow-lg: 0 8px 16px rgba(0, 0, 0, 0.1);
+            --neuron-glow: #60a5fa;
             --input-bg: #f9fafb;
             --input-border: #d1d5db;
             --code-bg: #f3f4f6;
             --code-text: #111827;
-            --attention-color: #9333ea;
-            --encoder-color: #16a34a;
-            --cell-blue-color: rgba(59, 130, 246, 0.2);
-            --cell-red-color: rgba(239, 68, 68, 0.15);
         }
 
         [data-theme="dark"] {
@@ -62,17 +60,15 @@
             --component-border: rgba(255, 255, 255, 0.1);
             --component-hover-border: #60a5fa;
             --action-bg: #1f2937;
+            --layer-visual-bg: rgba(255, 255, 255, 0.05);
             --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.2);
             --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.3);
             --shadow-lg: 0 8px 16px rgba(0, 0, 0, 0.3);
+            --neuron-glow: #93c5fd;
             --input-bg: #374151;
             --input-border: #4b5563;
             --code-bg: #222738;
             --code-text: #e2e8f0;
-            --attention-color: #c084fc;
-            --encoder-color: #4ade80;
-            --cell-blue-color: rgba(96, 165, 250, 0.15);
-            --cell-red-color: rgba(248, 113, 113, 0.15);
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -152,7 +148,7 @@
 
         .component-item:active, .action-item:active { cursor: grabbing; transform: scale(0.98); }
 
-        .component-icon, .action-icon { width: 18px; height: 18px; color: var(--text-secondary); flex-shrink: 0; }
+        .component-icon, .action-icon { width: 18px; height: 18px; color: var(--accent-color); flex-shrink: 0; }
         .action-icon { color: #8b5cf6; }
 
         .component-info h4, .action-info h4 { font-size: 0.875rem; font-weight: 500; color: var(--text-primary); margin-bottom: 0.25rem; }
@@ -237,8 +233,8 @@
         .dropped-component, .dropped-action {
             position: absolute; padding: 0.75rem; background: var(--component-bg); border: 1px solid var(--component-border);
             border-radius: 8px; box-shadow: var(--shadow-md); cursor: move; transition: all 0.2s ease;
+            min-width: 200px; max-width: 240px;
         }
-        .dropped-component { min-width: 180px; }
         .dropped-component.selected, .dropped-action.selected { border-color: var(--accent-color); box-shadow: 0 0 0 2px var(--accent-color), var(--shadow-lg); }
         .dropped-action {
             background: var(--action-bg); border-color: rgba(139, 92, 246, 0.3);
@@ -248,82 +244,13 @@
         .dropped-action:hover { border-color: rgba(139, 92, 246, 0.6); }
         .dropped-action.selected { border-color: #8b5cf6; }
 
-        .dropped-component .component-header, .dropped-action .action-header { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem; }
-        .dropped-component .component-title, .dropped-action .action-title { font-size: 0.875rem; font-weight: 600; color: var(--text-primary); }
-        .dropped-action .action-header { width: 100%; padding-bottom: 0.25rem; border-bottom: 1px solid var(--glass-border); margin-bottom: 0.25rem;}
-        .dropped-component .component-details, .dropped-action .action-details { font-size: 0.75rem; color: var(--text-secondary); line-height: 1.5; margin-top: 0.5rem; text-align: center; }
-        .dropped-action .action-details { margin-top: 0; text-align: left;}
+        .dropped-component .component-header { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem; }
+        .dropped-component .component-title { font-size: 0.875rem; font-weight: 600; color: var(--text-primary); }
+        .dropped-action .action-header { display: flex; align-items: center; gap: 0.5rem; width: 100%; padding-bottom: 0.25rem; border-bottom: 1px solid var(--glass-border); margin-bottom: 0.25rem;}
+        .dropped-action .action-title { font-size: 0.875rem; font-weight: 600; }
+        .dropped-component .component-details, .dropped-action .action-details { font-size: 0.75rem; color: var(--text-secondary); line-height: 1.5; margin-top: 0.5rem; }
+        .dropped-action .action-details { margin-top: 0; }
         
-        .dropped-component[data-component-type="encoder"], .dropped-component[data-component-type="decoder"] {
-            width: 120px;
-            min-height: 200px;
-        }
-        .dropped-component[data-component-type="attention"] {
-            width: 120px;
-            min-height: 200px;
-        }
-        .attention-matrix {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 4px;
-            padding: 0.5rem;
-        }
-        .matrix-cell {
-            width: 100%;
-            padding-bottom: 100%; 
-            border-radius: 4px;
-            opacity: 0.8;
-            transition: all 0.2s ease;
-        }
-        .matrix-cell.cell-blue { background-color: var(--cell-blue-color); border: 1px solid var(--accent-color); }
-        .matrix-cell.cell-red { background-color: var(--cell-red-color); border: 1px solid var(--danger-color); }
-        .matrix-cell:hover {
-            transform: scale(1.1);
-            box-shadow: 0 0 12px var(--attention-color);
-        }
-        
-        .encoder-stack {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 5px;
-            margin: 0.5rem 0;
-            padding: 8px 0;
-        }
-        .encoder-block {
-            width: 80%;
-            height: 14px;
-            background-color: var(--encoder-color);
-            opacity: 0.8;
-            border-radius: 3px;
-            box-shadow: inset 0 1px 2px rgba(0,0,0,0.1);
-        }
-        
-        .embedding-visual {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 12px;
-            margin: 0.5rem 0;
-            padding: 8px;
-        }
-        .token-dots { display: flex; flex-direction: column; gap: 6px; }
-        .token-dot {
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            background-color: var(--accent-color);
-            opacity: 0.7;
-        }
-        .embedding-arrow { font-size: 1.5rem; color: var(--text-muted); }
-        .dense-vector {
-            width: 30px;
-            height: 60px;
-            background: linear-gradient(180deg, var(--accent-color), #a5b4fc);
-            border-radius: 4px;
-            box-shadow: inset 0 1px 2px rgba(0,0,0,0.1);
-        }
-
         .edit-btn {
             position: absolute; top: 4px; right: 4px;
             width: 24px; height: 24px;
@@ -346,6 +273,18 @@
             color: white;
         }
         .edit-btn svg { width: 14px; height: 14px; }
+
+        .layer-visual {
+            display: flex; flex-direction: column; align-items: center; gap: 6px; margin: 0.5rem 0; padding: 0.75rem;
+            background: var(--layer-visual-bg); border-radius: 8px; border: 1px solid var(--glass-border);
+        }
+        
+        .neuron {
+            width: 12px; height: 12px; border-radius: 50%; background-color: transparent;
+            border: 1.5px solid rgba(59, 130, 246, 0.5); transition: all 0.3s ease;
+        }
+        .neuron:hover { transform: scale(1.15); background-color: var(--neuron-glow); border-color: var(--neuron-glow); box-shadow: 0 0 6px var(--neuron-glow); }
+        .neuron-more { font-size: 0.7rem; color: var(--text-muted); font-style: italic; letter-spacing: 0.5px; }
 
         .theme-icon.hidden { display: none; }
         .side-panel::-webkit-scrollbar { width: 6px; height: 6px; }
@@ -372,6 +311,7 @@
         .confirm-btn-delete:hover { background: var(--danger-hover); }
         .confirm-btn-cancel { background: var(--component-bg); border: 1px solid var(--component-border); }
         
+        /* Attributes Panel */
         .attributes-panel {
             position: absolute; right: 0; top: 0; bottom: 0;
             width: 320px; background-color: var(--panel-bg);
@@ -409,13 +349,15 @@
             color: var(--code-text);
             min-height: 150px;
         }
+        .checkbox-group label, .radio-group label { display: flex; align-items: center; gap: 0.5rem; font-weight: 400; margin-bottom: 0.5rem; }
         
+        /* UPDATED: Professional Analytics Attributes Styles */
         .form-group.switch-group {
             display: flex;
             justify-content: space-between;
             align-items: center;
             margin-bottom: 0;
-            padding: 0.5rem 0;
+            padding: 0.25rem 0;
         }
         .form-group.switch-group label:first-of-type {
             margin-bottom: 0;
@@ -451,6 +393,7 @@
             box-shadow: inset 0 1px 2px rgba(0,0,0,0.1);
         }
 
+        /* Export Modal Styles */
         .export-overlay {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -604,6 +547,7 @@
 
         #downloadCodeBtn { background-color: #22c55e; color: white; }
 
+        /* NEW/UPDATED Professional Spinner */
         #export-loading-step {
             display: flex;
             flex-direction: column;
@@ -653,7 +597,6 @@
         .success-icon svg { width: 32px; height: 32px; }
         #export-download-step h4 { font-size: 1.1rem; margin-bottom: 0.5rem; color: var(--text-primary); }
         #export-download-step p { color: var(--text-secondary); }
-    
         .logo-light,
         [data-theme="dark"] .logo-dark {
             display: block;
@@ -665,14 +608,14 @@
         }
     </style>
 </head>
-<body data-theme="dark">
+<body data-theme="light">
     <header>
         <div class="navbar-content">
             <a href="/" style="color: inherit; text-decoration: none;">
             <div class="logo">
                 <img src="/static/logo.png" alt="Thinking Machines Logo" class="logo-dark">
                 <img src="/static/logo2.png" alt="Thinking Machines Logo" class="logo-light">
-                <span>Transformer: {{ model_name }} | Attention is all you need</span>
+                <span>MLP: {{ model_name }}</span>
             </div>
             </a>
             <div class="header-actions">
@@ -681,8 +624,8 @@
                     Export Model
                 </button>
                 <button class="theme-toggle" id="themeToggle">
-                    <svg class="theme-icon sun-icon hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
-                    <svg class="theme-icon moon-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+                    <svg class="theme-icon sun-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+                    <svg class="theme-icon moon-icon hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
                 </button>
             </div>
         </div>
@@ -698,39 +641,19 @@
                 <!-- Component & Action Items -->
                 <div class="panel-section">
                     <h2 class="panel-title">Components</h2>
-                    <div class="component-item" draggable="true" data-component-type="data">
-                        <svg class="component-icon" viewBox="0 0 24 24" fill="none" stroke="#9fb6c8" stroke-width="1.6"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><line x1="10" y1="9" x2="8" y2="9"></line></svg>
-                        <div class="component-info"><h4>Data Source</h4><p>Input data for the model.</p></div>
-                    </div>
-                    <div class="component-item" draggable="true" data-component-type="input">
-                        <svg class="component-icon" viewBox="0 0 24 24" fill="none" stroke="#7ec7ff" stroke-width="1.6"><path d="M21 10c0 4.4-3.6 8-8 8h-1a8 8 0 0 1-8-8V6c0-4.4 3.6-8 8-8h1a8 8 0 0 1 8 8v4z"></path><path d="M21 10c0 4.4-3.6 8-8 8h-1a8 8 0 0 1-8-8V6c0-4.4 3.6-8 8-8h1a8 8 0 0 1 8 8v4z"></path></svg>
-                        <div class="component-info"><h4>Input Embedding</h4><p>Token & Positional Embeddings.</p></div>
-                    </div>
-                    <div class="component-item" draggable="true" data-component-type="encoder">
-                        <svg class="component-icon" viewBox="0 0 24 24" fill="none" stroke="var(--encoder-color)" stroke-width="1.6"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="8" y="8" width="8" height="8" rx="1"/></svg>
-                        <div class="component-info"><h4>Encoder</h4><p>Processes input sequences.</p></div>
-                    </div>
-                    <div class="component-item" draggable="true" data-component-type="attention">
-                         <svg class="component-icon" viewBox="0 0 24 24" fill="none" stroke="var(--attention-color)" stroke-width="1.6"><path d="M12 21a9 9 0 1 1 0-18 9 9 0 0 1 0 18z"/><path d="M12 12a3 3 0 1 1 0-6 3 3 0 0 1 0 6z"/></svg>
-                        <div class="component-info"><h4>Attention</h4><p>Multi-Head Attention mechanism.</p></div>
-                    </div>
-                    <div class="component-item" draggable="true" data-component-type="decoder">
-                        <svg class="component-icon" viewBox="0 0 24 24" fill="none" stroke="var(--encoder-color)" stroke-width="1.6"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M12 8v8m-4-4h8"/></svg>
-                        <div class="component-info"><h4>Decoder</h4><p>Generates output sequences.</p></div>
-                    </div>
-                    <div class="component-item" draggable="true" data-component-type="output">
-                        <svg class="component-icon" viewBox="0 0 24 24" fill="none" stroke="#7ec7ff" stroke-width="1.6"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><polyline points="9 15 12 12 15 15"/></svg>
-                        <div class="component-info"><h4>Output Layer</h4><p>Final Linear & Softmax layer.</p></div>
-                    </div>
+                    <div class="component-item" draggable="true" data-component-type="data-input"><svg class="component-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14a9 3 0 0 0 18 0V5"/><path d="M3 12a9 3 0 0 0 18 0"/></svg><div class="component-info"><h4>Data Input</h4><p>Dataset connection point</p></div></div>
+                    <div class="component-item" draggable="true" data-component-type="input-layer"><svg class="component-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg><div class="component-info"><h4>Input Layer</h4><p>Receives data features</p></div></div>
+                    <div class="component-item" draggable="true" data-component-type="hidden-layer"><svg class="component-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-1.414-.586H13"/><path d="m21 9-3.086 3.086a2 2 0 0 1-1.414.586H13"/></svg><div class="component-info"><h4>Hidden Layer</h4><p>Processing layer with neurons</p></div></div>
+                    <div class="component-item" draggable="true" data-component-type="output-layer"><svg class="component-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="12" y1="18" x2="12" y2="12"/><polyline points="9,15 12,18 15,15"/></svg><div class="component-info"><h4>Output Layer</h4><p>Final prediction layer</p></div></div>
                 </div>
-                <!-- Action Items -->
                 <div class="panel-section">
                     <h2 class="panel-title">Actions</h2>
                     <div class="action-item" draggable="true" data-action-type="train"><svg class="action-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg><div class="action-info"><h4>Train</h4><p>Train the model</p></div></div>
-                    <div class="action-item" draggable="true" data-action-type="generate-text"><svg class="action-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg><div class="action-info"><h4>Generate Text</h4><p>Create text from a prompt.</p></div></div>
+                    <div class="action-item" draggable="true" data-action-type="test"><svg class="action-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 12l2 2 4-4"/><path d="M21 12c-1 0-3-1-3-3s2-3 3-3 3 1 3 3-2 3-3 3"/><path d="M3 12c1 0 3-1-3-3s-2-3-3-3-3 1-3 3 2 3 3 3"/></svg><div class="action-info"><h4>Test</h4><p>Evaluate model performance</p></div></div>
                     <div class="action-item" draggable="true" data-action-type="analytics"><svg class="action-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg><div class="action-info"><h4>Display Analytics</h4><p>Show model metrics</p></div></div>
+                    <div class="action-item" draggable="true" data-action-type="user-input"><svg class="action-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><div class="action-info"><h4>Allow User Input</h4><p>Accept user data</p></div></div>
                     <div class="action-item" draggable="true" data-action-type="notify"><svg class="action-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="m13.73 21a2 2 0 0 1-3.46 0"/></svg><div class="action-info"><h4>Notify</h4><p>Send notifications</p></div></div>
-                    <div class="action-item" draggable="true" data-action-type="custom"><svg class="action-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l-.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg><div class="action-info"><h4>Custom Action</h4><p>Define custom logic</p></div></div>
+                    <div class="action-item" draggable="true" data-action-type="custom"><svg class="action-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg><div class="action-info"><h4>Custom Action</h4><p>Define custom logic</p></div></div>
                 </div>
             </div>
             <div class="canvas-container" id="canvasContainer">
@@ -809,11 +732,11 @@
                     <ul class="validation-list">
                         <li id="val-data-source">
                             <span class="val-icon"></span>
-                            <span class="val-text">Exactly 1 Data Source component</span>
+                            <span class="val-text">Exactly 1 Data Input component</span>
                         </li>
                         <li id="val-input-layer">
                             <span class="val-icon"></span>
-                            <span class="val-text">Exactly 1 Input Embedding</span>
+                            <span class="val-text">Exactly 1 Input Layer</span>
                         </li>
                         <li id="val-output-layer">
                             <span class="val-icon"></span>
@@ -892,92 +815,85 @@
         const attributesPanelClose = document.getElementById('attributesPanelClose');
 
         const defaultAttributes = {
-            'data': { filepath: '/data/corpus.txt', vocabSize: 50000, notes: '' },
-            'input': { embeddingDim: 512, maxSeqLength: 256, dropout: 0.1, notes: '' },
-            'encoder': { numLayers: 6, numHeads: 8, feedforwardDim: 2048, dropout: 0.1, notes: '' },
-            'attention': { numHeads: 8, dropout: 0.1, masked: false, notes: '' },
-            'decoder': { numLayers: 6, numHeads: 8, feedforwardDim: 2048, dropout: 0.1, notes: '' },
-            'output': { activation: 'Softmax', temperature: 0.7, notes: '' },
-            'train': { epochs: 10, batchSize: 32, optimizer: 'AdamW', learningRate: 0.0001, notes: '' },
-            'analytics': { bleuScore: true, perplexity: true, notes: '' },
-            'generate-text': { prompt: 'Once upon a time', maxTokens: 100, notes: '' },
-            'notify': { notificationText: "Your model '{{ model_name }}' has finished training.", webhookUrl: '', notes: '' },
+            'data-input': { filepath: '/data/dataset.csv', train: 80, test: 10, val: 10, notes: '' },
+            'input-layer': { neurons: 784, activation: 'None', notes: '' },
+            'hidden-layer': { neurons: 128, activation: 'ReLU', notes: '' },
+            'output-layer': { neurons: 10, activation: 'Softmax', temperature: 1.0, notes: '' },
+            'train': { epochs: 50, dropout: 0.2, optimizer: 'Adam', notes: '' },
+            'test': { notes: '' },
+            'analytics': { rocAuc: true, f1Score: true, precision: false, recall: false, confMatrix: false, display: 'test', notes: '' },
+            'user-input': { inputType: 'Text', notes: '' },
+            'notify': { notificationText: "Your model '{{ model_name }}' has finished training. Satisfied or do you want to iterate again with Thinking Machines ?", webhookUrl: '', notes: '' },
             'custom': { customCode: '# Your custom Python code here\nprint("Executing custom action...")', notes: '' }
         };
-
-        // MODIFIED: This function pre-populates the UI with the new specified template
-        function initializeAndPopulateUI() {
-            // Hide placeholders
+        
+        // --- CORRECTED --- Robust function to programmatically populate the canvas
+        function populateInitialState() {
+            // ---- 1. Create Model Architecture Components ----
             dropZone.style.display = 'none';
-            const workflowPlaceholder = workflowCanvas.querySelector('.workflow-placeholder');
-            if (workflowPlaceholder) workflowPlaceholder.style.display = 'none';
-
-            // Define the new components and their properties
-            const componentsData = [
-                { id: 'init-data-1', type: 'data', attributes: { vocabSize: 37000 }, pos: { left: '100px', top: '150px' } },
-                { id: 'init-input-1', type: 'input', attributes: { embeddingDim: 512 }, pos: { left: '320px', top: '150px' } },
-                { id: 'init-encoder-1', type: 'encoder', attributes: { numLayers: 6, numHeads: 8 }, pos: { left: '540px', top: '150px' } },
-                { id: 'init-attn-1', type: 'attention', attributes: { numHeads: 8 }, pos: { left: '760px', top: '150px' } },
-                { id: 'init-decoder-1', type: 'decoder', attributes: { numLayers: 6, numHeads: 8 }, pos: { left: '980px', top: '150px' } },
-                { id: 'init-output-1', type: 'output', attributes: { temperature: 0.7, activation: 'Softmax' }, pos: { left: '1200px', top: '150px' } }
+            const componentsToCreate = [
+                { id: 'init-comp-1', type: 'data-input',   attributes: { train: 70, test: 15, val: 15 }, pos: { x: 150, y: 250 } },
+                { id: 'init-comp-2', type: 'input-layer',  attributes: { neurons: 784, activation: 'None' }, pos: { x: 450, y: 250 } },
+                { id: 'init-comp-3', type: 'hidden-layer', attributes: { neurons: 128, activation: 'ReLU' }, pos: { x: 750, y: 250 } },
+                { id: 'init-comp-4', type: 'hidden-layer', attributes: { neurons: 64, activation: 'ReLU' }, pos: { x: 1050, y: 250 } },
+                { id: 'init-comp-5', type: 'output-layer', attributes: { neurons: 10, activation: 'Softmax' }, pos: { x: 1350, y: 250 } }
             ];
 
-            // Create and position model components
-            componentsData.forEach(data => {
-                const fullAttributes = { ...defaultAttributes[data.type], ...data.attributes };
-                const el = createDroppedComponent(0, 0, data.type, fullAttributes, data.id);
-                el.style.left = data.pos.left;
-                el.style.top = data.pos.top;
+            componentsToCreate.forEach(comp => {
+                const mergedAttrs = { ...defaultAttributes[comp.type], ...comp.attributes };
+                const newEl = createDroppedComponent(0, 0, comp.type, mergedAttrs, comp.id);
+                newEl.style.left = `${comp.pos.x}px`;
+                newEl.style.top = `${comp.pos.y}px`;
             });
-            
-            // Create and position the new training action
-            const trainAttrs = { ...defaultAttributes['train'], epochs: 18, optimizer: 'AdamW', learningRate: 0.0005, batchSize: 25000 };
-            const trainAction = createDroppedAction(0, 0, 'train', trainAttrs, 'init-train-1');
-            trainAction.style.left = '150px';
-            trainAction.style.top = '100px';
 
-            // Batch connections for the new architecture
-            jsPlumbInstanceCanvas.batch(() => {
-                jsPlumbInstanceCanvas.connect({ source: 'init-data-1', target: 'init-input-1', anchors: ["Right", "Left"] });
-                jsPlumbInstanceCanvas.connect({ source: 'init-input-1', target: 'init-encoder-1', anchors: ["Right", "Left"] });
-                jsPlumbInstanceCanvas.connect({ source: 'init-encoder-1', target: 'init-attn-1', anchors: ["Right", "Left"] });
-                jsPlumbInstanceCanvas.connect({ source: 'init-attn-1', target: 'init-decoder-1', anchors: ["Right", "Left"] });
-                jsPlumbInstanceCanvas.connect({ source: 'init-decoder-1', target: 'init-output-1', anchors: ["Right", "Left"] });
+            // ---- 2. Create Action Workflow Components ----
+            const workflowPlaceholder = workflowCanvas.querySelector('.workflow-placeholder');
+            if (workflowPlaceholder) workflowPlaceholder.style.display = 'none';
+            const actionsToCreate = [
+                { id: 'init-action-1', type: 'train',     attributes: { epochs: 7, dropout: 0.0, optimizer: 'Adam' }, pos: { x: 200, y: 150 } },
+                { id: 'init-action-2', type: 'analytics', attributes: { rocAuc: true, f1Score: true, precision: true, recall: true, confMatrix: true, display: 'test' }, pos: { x: 450, y: 150 } }
+            ];
+
+            actionsToCreate.forEach(action => {
+                const mergedAttrs = { ...defaultAttributes[action.type], ...action.attributes };
+                const newEl = createDroppedAction(0, 0, action.type, mergedAttrs, action.id);
+                newEl.style.left = `${action.pos.x}px`;
+                newEl.style.top = `${action.pos.y}px`;
             });
-            
-            // Save this initial state for undo/redo
-            saveCanvasState();
-            saveWorkflowState();
-            
-            // Center the view on the new components
-            modelCanvas.scrollTop = 50; 
-            modelCanvas.scrollLeft = 50;
-            workflowCanvasWrapper.scrollTop = 20;
-            workflowCanvasWrapper.scrollLeft = 50;
+
+            // ---- 3. Create Connections After DOM Update ----
+            // Use setTimeout with 0ms delay to push this to the end of the execution queue.
+            // This ensures all components are rendered before we try to connect them.
+            setTimeout(() => {
+                jsPlumbInstanceCanvas.batch(() => {
+                    jsPlumbInstanceCanvas.connect({ source: 'init-comp-1', target: 'init-comp-2' });
+                    jsPlumbInstanceCanvas.connect({ source: 'init-comp-2', target: 'init-comp-3' });
+                    jsPlumbInstanceCanvas.connect({ source: 'init-comp-3', target: 'init-comp-4' });
+                    jsPlumbInstanceCanvas.connect({ source: 'init-comp-4', target: 'init-comp-5' });
+                });
+                jsPlumbInstanceWorkflow.batch(() => {
+                    jsPlumbInstanceWorkflow.connect({ source: 'init-action-1', target: 'init-action-2' });
+                });
+            }, 0);
         }
 
         jsPlumb.ready(() => {
             jsPlumbInstanceCanvas = jsPlumb.getInstance({
-                Connector: ["Bezier", { curviness: 60 }],
-                PaintStyle: { stroke: "var(--accent-color)", strokeWidth: 2 },
+                Connector: ["Bezier", { curviness: 50 }], PaintStyle: { stroke: "var(--accent-color)", strokeWidth: 2 },
                 Endpoint: ["Dot", { radius: 6 }], EndpointStyle: { fill: "var(--accent-color)", stroke: "var(--component-bg)", strokeWidth: 1 },
                 HoverPaintStyle: { stroke: "var(--accent-hover)", strokeWidth: 3 }, Container: "canvas",
             });
             
             jsPlumbInstanceCanvas.bind("beforeDrop", (info) => {
-                const sourceEl = document.getElementById(info.sourceId);
-                const targetEl = document.getElementById(info.targetId);
-                const sourceType = sourceEl.dataset.componentType;
-                const targetType = targetEl.dataset.componentType;
-                
+                const source = document.getElementById(info.sourceId);
+                const target = document.getElementById(info.targetId);
+                const sourceType = source.dataset.componentType;
+                const targetType = target.dataset.componentType;
                 const validConnections = {
-                    'data': ['input'],
-                    'input': ['encoder', 'output', 'attention'],
-                    'encoder': ['attention', 'decoder'],
-                    'attention': ['decoder', 'output'],
-                    'decoder': ['output']
+                    'data-input': ['input-layer'],
+                    'input-layer': ['hidden-layer'],
+                    'hidden-layer': ['hidden-layer', 'output-layer']
                 };
-
                 return validConnections[sourceType]?.includes(targetType);
             });
 
@@ -996,7 +912,14 @@
             jsPlumbInstanceWorkflow.bind("connection", (info, originalEvent) => { if (originalEvent) saveWorkflowState(); });
             jsPlumbInstanceWorkflow.bind("connectionDetached", (info, originalEvent) => { if (originalEvent) saveWorkflowState(); });
 
-            initializeAndPopulateUI();
+            populateInitialState();
+            saveCanvasState();
+            saveWorkflowState();
+            
+            modelCanvas.scrollTop = 50; 
+            modelCanvas.scrollLeft = 50;
+            workflowCanvasWrapper.scrollTop = 50;
+            workflowCanvasWrapper.scrollLeft = 100;
         });
         
         document.getElementById('themeToggle').addEventListener('click', () => {
@@ -1013,24 +936,24 @@
             item.addEventListener('dragstart', (e) => {
                 draggedElement = e.target.closest('.component-item, .action-item');
                 draggedType = draggedElement.classList.contains('component-item') ? 'component' : 'action';
-                e.dataTransfer.setData('type', draggedElement.dataset.componentType || draggedElement.dataset.actionType);
+                e.dataTransfer.effectAllowed = 'copy';
             });
         });
 
         canvas.addEventListener('dragover', e => { if (draggedType === 'component') e.preventDefault(); });
         canvas.addEventListener('drop', e => {
-            if (draggedType === 'component') {
-                if (canvas.querySelectorAll('.dropped-component').length === 0) document.getElementById('dropZone').style.display = 'none';
-                createDroppedComponent(e.clientX, e.clientY, e.dataTransfer.getData('type'));
+            if (draggedType === 'component' && draggedElement) {
+                if (canvas.querySelectorAll('.dropped-component').length === 0) dropZone.style.display = 'none';
+                createDroppedComponent(e.clientX, e.clientY, draggedElement.dataset.componentType);
             }
         });
 
         workflowCanvas.addEventListener('dragover', e => { if (draggedType === 'action') e.preventDefault(); });
         workflowCanvas.addEventListener('drop', e => {
-            if (draggedType === 'action') {
+            if (draggedType === 'action' && draggedElement) {
                 const placeholder = workflowCanvas.querySelector('.workflow-placeholder');
                 if (placeholder) placeholder.style.display = 'none';
-                createDroppedAction(e.clientX, e.clientY, e.dataTransfer.getData('type'));
+                createDroppedAction(e.clientX, e.clientY, draggedElement.dataset.actionType);
             }
         });
         
@@ -1040,7 +963,7 @@
                 const elementToRemove = document.getElementById(draggedComponentForDeleteId);
                 if (elementToRemove.classList.contains('dropped-component')) {
                      jsPlumbInstanceCanvas.remove(draggedComponentForDeleteId);
-                     if (canvas.querySelectorAll('.dropped-component').length === 0) document.getElementById('dropZone').style.display = 'flex';
+                     if (canvas.querySelectorAll('.dropped-component').length === 0) dropZone.style.display = 'flex';
                      saveCanvasState();
                 } else {
                     jsPlumbInstanceWorkflow.remove(draggedComponentForDeleteId);
@@ -1059,9 +982,10 @@
             droppedComponent.className = 'dropped-component';
             droppedComponent.id = id || `comp-${componentCounter}`;
             droppedComponent.dataset.componentType = componentType;
+            droppedComponent.draggable = true;
             
             const canvasRect = canvas.getBoundingClientRect();
-            droppedComponent.style.left = `${clientX - canvasRect.left - 90}px`;
+            droppedComponent.style.left = `${clientX - canvasRect.left - 100}px`;
             droppedComponent.style.top = `${clientY - canvasRect.top - 60}px`;
 
             const sourceElement = document.querySelector(`.component-item[data-component-type="${componentType}"]`);
@@ -1071,6 +995,7 @@
             droppedComponent.innerHTML = `
                 <button class="edit-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></button>
                 <div class="component-header">${componentIcon}<span class="component-title">${componentTitle}</span></div>
+                <div class="layer-visual-container"></div>
                 <div class="component-details"></div>`;
             canvas.appendChild(droppedComponent);
             
@@ -1089,16 +1014,20 @@
             droppedComponent.addEventListener('dragstart', e => { draggedComponentForDeleteId = droppedComponent.id; sidePanel.classList.add('delete-active'); e.stopPropagation(); });
             droppedComponent.addEventListener('dragend', () => { sidePanel.classList.remove('delete-active'); draggedComponentForDeleteId = null; });
 
-            const endpointOptions = { maxConnections: 1 };
-            if (componentType === 'data') {
-                jsPlumbInstanceCanvas.addEndpoint(droppedComponent, { anchor: "Right", isSource: true }, endpointOptions);
-            } else if (componentType === 'output') {
-                jsPlumbInstanceCanvas.addEndpoint(droppedComponent, { anchor: "Left", isTarget: true }, endpointOptions);
-            } else {
-                jsPlumbInstanceCanvas.addEndpoint(droppedComponent, { anchor: "Left", isTarget: true }, endpointOptions);
-                jsPlumbInstanceCanvas.addEndpoint(droppedComponent, { anchor: "Right", isSource: true }, endpointOptions);
+            // Add specific Left/Right endpoints to enforce professional side-by-side connections
+            switch (componentType) {
+                case 'data-input':
+                    jsPlumbInstanceCanvas.addEndpoint(droppedComponent, { anchor: "Right", isSource: true });
+                    break;
+                case 'output-layer':
+                    jsPlumbInstanceCanvas.addEndpoint(droppedComponent, { anchor: "Left", isTarget: true });
+                    break;
+                default: // input-layer and hidden-layer
+                    jsPlumbInstanceCanvas.addEndpoint(droppedComponent, { anchor: "Left", isTarget: true });
+                    jsPlumbInstanceCanvas.addEndpoint(droppedComponent, { anchor: "Right", isSource: true });
+                    break;
             }
-            
+
             jsPlumbInstanceCanvas.draggable(droppedComponent, { containment: true, grid: [10, 10], stop: () => { jsPlumbInstanceCanvas.repaintEverything(); saveCanvasState(); } });
             
             if(!id) saveCanvasState();
@@ -1141,8 +1070,10 @@
             droppedAction.addEventListener('dragstart', e => { draggedComponentForDeleteId = droppedAction.id; sidePanel.classList.add('delete-active'); e.stopPropagation(); });
             droppedAction.addEventListener('dragend', () => { sidePanel.classList.remove('delete-active'); draggedComponentForDeleteId = null; });
             
-            jsPlumbInstanceWorkflow.addEndpoint(droppedAction, { anchor: "Right", isSource: true, isTarget: true });
-            jsPlumbInstanceWorkflow.addEndpoint(droppedAction, { anchor: "Left", isSource: true, isTarget: true });
+            // Add specific Left/Right endpoints for side-by-side workflow
+            jsPlumbInstanceWorkflow.addEndpoint(droppedAction, { anchor: "Left", isTarget: true });
+            jsPlumbInstanceWorkflow.addEndpoint(droppedAction, { anchor: "Right", isSource: true });
+            
             jsPlumbInstanceWorkflow.draggable(droppedAction, { containment: "parent", grid: [10, 10], stop: () => { jsPlumbInstanceWorkflow.repaintEverything(); saveWorkflowState(); } });
             
             if(!id) saveWorkflowState();
@@ -1155,34 +1086,27 @@
             if (!detailsContainer) return;
 
             let detailsHTML = '';
-            if (type === 'data') {
-                detailsHTML = `Vocab Size: ${element.dataset.vocabSize}`;
-            } else if (type === 'input') {
-                detailsHTML = `<div class="embedding-visual">
-                    <div class="token-dots"><div class="token-dot"></div><div class="token-dot"></div><div class="token-dot"></div></div>
-                    <div class="embedding-arrow">&rarr;</div>
-                    <div class="dense-vector"></div>
-                </div>
-                Dim: ${element.dataset.embeddingDim}`;
-            } else if (type === 'encoder' || type === 'decoder') {
-                 const stack = Array.from({length: Math.min(6, element.dataset.numLayers)}, () => `<div class="encoder-block"></div>`).join('');
-                 detailsHTML = `<div class="encoder-stack">${stack}</div>Layers: ${element.dataset.numLayers}<br>Heads: ${element.dataset.numHeads}`;
-            } else if (type === 'attention') {
-                 let cells = '';
-                 for(let i=0; i<16; i++) {
-                    cells += `<div class="matrix-cell ${(i + Math.floor(i/4)) % 2 === 0 ? 'cell-blue' : 'cell-red'}"></div>`;
-                 }
-                 detailsHTML = `<div class="attention-matrix">${cells}</div>Multi-Head Attention<br>Heads: ${element.dataset.numHeads}`;
-            } else if (type === 'output') {
-                detailsHTML = `Activation: ${element.dataset.activation}<br>Temp: ${element.dataset.temperature}`;
+            if (['input-layer', 'hidden-layer', 'output-layer'].includes(type)) {
+                const neurons = parseInt(element.dataset.neurons, 10) || 1;
+                const visualContainer = element.querySelector('.layer-visual-container');
+                const maxVisibleNeurons = Math.round(2 + 8 * (neurons / (neurons + 100)));
+
+                let neuronsHTML = Array.from({length: maxVisibleNeurons}, () => `<div class="neuron"></div>`).join('');
+                if (neurons > maxVisibleNeurons) {
+                    neuronsHTML += `<div class="neuron-more">+ ${neurons - maxVisibleNeurons} more</div>`;
+                }
+                visualContainer.innerHTML = `<div class="layer-visual">${neuronsHTML}</div>`;
+                detailsHTML = `Neurons: ${neurons}<br>Activation: ${element.dataset.activation}`;
+            } else if (type === 'data-input') {
+                detailsHTML = `Split: ${element.dataset.train}/${element.dataset.test}/${element.dataset.val}`;
             } else if (type === 'train') {
                 detailsHTML = `${element.dataset.epochs} Epochs, ${element.dataset.optimizer}`;
             } else if (type === 'analytics') {
-                const metrics = ['bleuScore', 'perplexity']
+                const metrics = ['rocAuc', 'f1Score', 'precision', 'recall', 'confMatrix']
                     .filter(m => element.dataset[m] === 'true').length;
-                detailsHTML = `${metrics} metrics enabled`;
-            } else if (type === 'generate-text') {
-                detailsHTML = `Max Tokens: ${element.dataset.maxTokens}`;
+                detailsHTML = `${metrics} metrics, on ${element.dataset.display} data`;
+            } else if (type === 'user-input') {
+                detailsHTML = `Type: ${element.dataset.inputType}`;
             } else if (type === 'notify') {
                 detailsHTML = `Webhook: ${element.dataset.webhookUrl ? 'Set' : 'Not Set'}`;
             } else if (type === 'custom') {
@@ -1256,7 +1180,7 @@
             if (elementToDelete) {
                 if (elementToDelete.classList.contains('dropped-component')) {
                      jsPlumbInstanceCanvas.remove(elementToDelete);
-                     if (canvas.querySelectorAll('.dropped-component').length === 0) document.getElementById('dropZone').style.display = 'flex';
+                     if (canvas.querySelectorAll('.dropped-component').length === 0) dropZone.style.display = 'flex';
                      saveCanvasState();
                 } else {
                     jsPlumbInstanceWorkflow.remove(elementToDelete);
@@ -1316,61 +1240,64 @@
                 return `<div class="form-group"><label for="${name}">${label}</label><select name="${name}" id="${name}">${opts}</select></div>`;
             };
             const createTextarea = (name, label, value, className = '') => `<div class="form-group"><label for="${name}">${label}</label><textarea name="${name}" id="${name}" class="${className}">${value}</textarea></div>`;
-            const createSwitch = (name, label, checked) => `<div class="form-group switch-group"><label for="${name}">${label}</label><label class="switch"><input type="checkbox" name="${name}" id="${name}" ${checked}><span class="slider round"></span></label></div>`;
             
-            if (type === 'data') {
+            if (['input-layer', 'hidden-layer', 'output-layer'].includes(type)) {
+                formHTML += `<div class="attr-section"><h4>Parameters</h4>
+                    ${createInput('neurons', 'Neuron Count', data.neurons)}
+                    ${createSelect('activation', 'Activation Function', data.activation, ['ReLU', 'Sigmoid', 'Tanh', 'Softmax', 'Linear', 'None'])}
+                    ${type === 'output-layer' ? createInput('temperature', 'Temperature', data.temperature, 'number', '0.1') : ''}
+                </div>`;
+            } else if (type === 'data-input') {
                 formHTML += `<div class="attr-section"><h4>Data Source</h4>
                     ${createInput('filepath', 'Filepath', data.filepath, 'text')}
-                    ${createInput('vocabSize', 'Vocabulary Size', data.vocabSize)}
-                </div>`;
-            } else if (type === 'input') {
-                formHTML += `<div class="attr-section"><h4>Embedding Layer</h4>
-                    ${createInput('embeddingDim', 'Embedding Dimensions', data.embeddingDim)}
-                    ${createInput('maxSeqLength', 'Max Sequence Length', data.maxSeqLength)}
-                    ${createInput('dropout', 'Dropout Rate', data.dropout, 'number', '0.05')}
-                </div>`;
-            } else if (type === 'encoder' || type === 'decoder') {
-                formHTML += `<div class="attr-section"><h4>${type.charAt(0).toUpperCase() + type.slice(1)} Block</h4>
-                    ${createInput('numLayers', 'Number of Layers (N)', data.numLayers)}
-                    ${createInput('numHeads', 'Attention Heads', data.numHeads)}
-                    ${createInput('feedforwardDim', 'Feed-Forward Dim', data.feedforwardDim)}
-                    ${createInput('dropout', 'Dropout Rate', data.dropout, 'number', '0.05')}
-                </div>`;
-            } else if (type === 'attention') {
-                 formHTML += `<div class="attr-section"><h4>Attention Mechanism</h4>
-                    ${createInput('numHeads', 'Attention Heads', data.numHeads)}
-                    ${createInput('dropout', 'Dropout Rate', data.dropout, 'number', '0.05')}
-                    ${createSwitch('masked', 'Use Masking', data.masked === 'true')}
-                </div>`;
-            } else if (type === 'output') {
-                formHTML += `<div class="attr-section"><h4>Output Layer</h4>
-                    ${createSelect('activation', 'Final Activation', data.activation, ['Softmax', 'Sigmoid', 'Linear'])}
-                    ${createInput('temperature', 'Temperature', data.temperature, 'number', '0.1')}
+                    <h4>Data Split (%)</h4>
+                    ${createInput('train', 'Train', data.train)}
+                    ${createInput('test', 'Test', data.test)}
+                    ${createInput('val', 'Validation', data.val)}
                 </div>`;
             } else if (type === 'train') {
-                formHTML += `<div class="attr-section"><h4>Training Parameters</h4>
+                formHTML += `<div class="attr-section"><h4>Hyperparameters</h4>
                     ${createInput('epochs', 'Epochs', data.epochs)}
-                    ${createInput('batchSize', 'Batch Size', data.batchSize)}
-                    ${createSelect('optimizer', 'Optimizer', data.optimizer, ['AdamW', 'Adam', 'SGD'])}
-                    ${createInput('learningRate', 'Learning Rate', data.learningRate, 'number', '0.00001')}
+                    ${createInput('dropout', 'Dropout Rate', data.dropout, 'number', '0.05')}
+                    ${createSelect('optimizer', 'Optimizer', data.optimizer, ['Adam', 'SGD', 'RMSprop', 'Adagrad'])}
                 </div>`;
             } else if (type === 'analytics') {
+                const createSwitch = (name, label, checked) => `
+                    <div class="form-group switch-group">
+                        <label for="${name}">${label}</label>
+                        <label class="switch">
+                            <input type="checkbox" name="${name}" id="${name}" ${checked}>
+                            <span class="slider round"></span>
+                        </label>
+                    </div>`;
+
                 formHTML += `<div class="attr-section"><h4>Metrics</h4>
-                    ${createSwitch('bleuScore', 'BLEU Score', data.bleuScore === 'true')}
-                    ${createSwitch('perplexity', 'Perplexity', data.perplexity === 'true')}
+                    ${createSwitch('rocAuc', 'ROC AUC Curve', data.rocAuc === 'true')}
+                    ${createSwitch('f1Score', 'F1-Score', data.f1Score === 'true')}
+                    ${createSwitch('precision', 'Precision', data.precision === 'true')}
+                    ${createSwitch('recall', 'Recall', data.recall === 'true')}
+                    ${createSwitch('confMatrix', 'Confusion Matrix', data.confMatrix === 'true')}
+                    <h4>Data Scope</h4>
+                    <div class="form-group">
+                         <div class="segmented-control">
+                            <input type="radio" name="display" value="test" id="display-test" ${data.display === 'test' ? 'checked' : ''}>
+                            <label for="display-test">Test Only</label>
+                            <input type="radio" name="display" value="both" id="display-both" ${data.display === 'both' ? 'checked' : ''}>
+                            <label for="display-both">Test & Train</label>
+                        </div>
+                    </div>
                 </div>`;
-            } else if (type === 'generate-text') {
-                formHTML += `<div class="attr-section"><h4>Generation Parameters</h4>
-                    ${createTextarea('prompt', 'Starting Prompt', data.prompt)}
-                    ${createInput('maxTokens', 'Max New Tokens', data.maxTokens)}
+            } else if (type === 'user-input') {
+                formHTML += `<div class="attr-section"><h4>Configuration</h4>
+                    ${createSelect('inputType', 'Input Type', data.inputType, ['Text', 'File'])}
                 </div>`;
             } else if (type === 'notify') {
-                 formHTML += `<div class="attr-section"><h4>Notification</h4>
-                    ${createTextarea('notificationText', 'Message', data.notificationText)}
+                 formHTML += `<div class="attr-section"><h4>Configuration</h4>
+                    ${createTextarea('notificationText', 'Notification Text', data.notificationText)}
                     ${createInput('webhookUrl', 'Webhook URL', data.webhookUrl, 'text')}
                 </div>`;
             } else if (type === 'custom') {
-                 formHTML += `<div class="attr-section"><h4>Custom Python Code</h4>
+                 formHTML += `<div class="attr-section"><h4>Python Code</h4>
                     ${createTextarea('customCode', 'Custom Logic', data.customCode, 'code-input')}
                 </div>`;
             }
@@ -1404,7 +1331,7 @@
                     state.connections.forEach(conn => jsPlumbInstanceCanvas.connect({ source: conn.sourceId, target: conn.targetId, fireEvent: !1 }))
                 }, 0)
             });
-            if (canvas.querySelectorAll(".dropped-component").length > 0) document.getElementById('dropZone').style.display = "none"; else document.getElementById('dropZone').style.display = "flex"
+            if (canvas.querySelectorAll(".dropped-component").length > 0) dropZone.style.display = "none"; else dropZone.style.display = "flex"
         }
 
         function saveWorkflowState() {
@@ -1550,9 +1477,9 @@
             const actions = workflowHistory[workflowHistoryIndex]?.actions || [];
             
             const componentCounts = {
-                'data': 0,
-                'input': 0,
-                'output': 0
+                'data-input': 0,
+                'input-layer': 0,
+                'output-layer': 0
             };
             components.forEach(comp => {
                 if (comp.type in componentCounts) {
@@ -1565,7 +1492,7 @@
             let isModelValid = true;
 
             const valDataSource = document.getElementById('val-data-source');
-            if (componentCounts['data'] === 1) {
+            if (componentCounts['data-input'] === 1) {
                 valDataSource.className = 'success';
             } else {
                 valDataSource.className = 'error';
@@ -1573,7 +1500,7 @@
             }
 
             const valInputLayer = document.getElementById('val-input-layer');
-            if (componentCounts['input'] === 1) {
+            if (componentCounts['input-layer'] === 1) {
                 valInputLayer.className = 'success';
             } else {
                 valInputLayer.className = 'error';
@@ -1581,7 +1508,7 @@
             }
 
             const valOutputLayer = document.getElementById('val-output-layer');
-            if (componentCounts['output'] === 1) {
+            if (componentCounts['output-layer'] === 1) {
                 valOutputLayer.className = 'success';
             } else {
                 valOutputLayer.className = 'error';
@@ -1628,8 +1555,7 @@
             };
 
             try {
-                // NOTE: This endpoint would need to be created on the backend
-                const response = await fetch('/generate-code-transformer', {
+                const response = await fetch('/generate-code-mlp', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
@@ -1641,7 +1567,8 @@
                 }
 
                 const result = await response.json();
-                generatedCodeContent.pytorch = result.pytorch_code; // Transformers are typically PyTorch
+                generatedCodeContent.keras = result.keras_code;
+                generatedCodeContent.pytorch = result.pytorch_code;
 
                 loadingStep.style.display = 'none';
                 downloadStep.style.display = 'block';
@@ -1657,7 +1584,7 @@
         });
 
         downloadCodeBtn.addEventListener('click', () => {
-            const code = generatedCodeContent.pytorch; // Default to PyTorch for Transformers
+            const code = generatedCodeContent.keras;
             if (!code) {
                 alert("No code content to download.");
                 return;
