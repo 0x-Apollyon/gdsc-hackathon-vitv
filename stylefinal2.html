@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Draw Digit — Pixel Grid</title>
+<style>
+  body {
+    margin: 0;
+    padding: 0;
+    background: #121926;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    min-height: 100vh;
+  }
+
+  .container {
+    display: flex;
+    gap: 40px;
+    padding: 30px;
+    margin-top: 40px;
+    background: #1C2533;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.6);
+    border: 2px solid #2A3A4D;
+    align-items: flex-start;
+  }
+
+  .canvas-container, .grid-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+  }
+
+  .canvas-container {
+    height: 560px;
+  }
+
+  .grid-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+  }
+
+  canvas {
+    background-color: #262E3F;
+    border-radius: 8px;
+    border: 1px solid #3A4B61;
+    cursor: crosshair;
+  }
+
+  #gridCanvas {
+    background-color: #000000 !important;
+  }
+
+  .controls {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+    flex-wrap: wrap;
+  }
+
+  h2 {
+    margin: 0 0 10px 0;
+    color: #E0E6F1;
+    font-size: 18px;
+  }
+
+  button {
+    background-color: #2A3A4D;
+    color: #E0E6F1;
+    border: 1px solid #3A4B61;
+    padding: 10px 14px;
+    font-weight: bold;
+    cursor: pointer;
+    border-radius: 6px;
+    transition: all 0.2s ease-in-out;
+  }
+  button:hover {
+    background-color: #3A4B61;
+    border-color: #5A6A85;
+  }
+
+  textarea {
+    width: 280px;
+    height: 200px;
+    background-color: #262E3F;
+    color: #E0E6F1;
+    border-radius: 8px;
+    border: 1px solid #3A4B61;
+    padding: 10px;
+    font-family: monospace;
+    font-size: 13px;
+    resize: none;
+    margin-top: 15px;
+  }
+
+  @media(max-width:900px){
+    .container { flex-direction: column; align-items: center; gap: 20px; }
+    .canvas-container, .grid-container { height: auto; }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <!-- Draw Digit Box -->
+  <div class="canvas-container">
+    <h2>Draw Digit</h2>
+    <canvas id="drawCanvas" width="280" height="280"></canvas>
+    <div class="controls">
+      <button onclick="clearCanvas()">Clear</button>
+      <button onclick="saveCSV()">Save Pixel CSV</button>
+    </div>
+  </div>
+
+  <!-- Pixel Grid Box -->
+  <div class="grid-container">
+    <h2>28×28 Pixel Grid</h2>
+    <canvas id="gridCanvas" width="280" height="280"></canvas>
+    <textarea id="pixelData" readonly></textarea>
+  </div>
+</div>
+
+<script>
+const CANVAS_SIZE = 280;
+const GRID_SIZE = 28;
+const CELL = CANVAS_SIZE / GRID_SIZE;
+const PEN_WIDTH = 18;
+
+const drawCanvas = document.getElementById("drawCanvas");
+const drawCtx = drawCanvas.getContext("2d");
+drawCtx.fillStyle = "#262E3F";
+drawCtx.fillRect(0,0,CANVAS_SIZE,CANVAS_SIZE);
+
+const gridCanvas = document.getElementById("gridCanvas");
+const gridCtx = gridCanvas.getContext("2d");
+
+let drawing = false;
+let lastX = 0;
+let lastY = 0;
+let latestPixels = [];  // store latest 28x28 values
+
+drawCanvas.addEventListener("mousedown", e => {
+  drawing = true;
+  [lastX, lastY] = [e.offsetX, e.offsetY];
+});
+drawCanvas.addEventListener("mouseup", () => drawing = false);
+drawCanvas.addEventListener("mouseout", () => drawing = false);
+drawCanvas.addEventListener("mousemove", draw);
+
+function draw(e) {
+  if (!drawing) return;
+  drawCtx.strokeStyle = "#E0E6F1";
+  drawCtx.lineWidth = PEN_WIDTH;
+  drawCtx.lineCap = "round";
+  drawCtx.beginPath();
+  drawCtx.moveTo(lastX, lastY);
+  drawCtx.lineTo(e.offsetX, e.offsetY);
+  drawCtx.stroke();
+  [lastX,lastY] = [e.offsetX, e.offsetY];
+  requestAnimationFrame(updatePixelGrid);
+}
+
+function updatePixelGrid() {
+  const imgData = drawCtx.getImageData(0,0,CANVAS_SIZE,CANVAS_SIZE);
+  const pixels = imgData.data;
+  const small = [];
+
+  const BACKGROUND = (38+46+63)/3;
+  const FOREGROUND = (224+230+241)/3;
+  const RANGE = FOREGROUND - BACKGROUND;
+
+  for (let y=0; y<GRID_SIZE; y++) {
+    const row = [];
+    for (let x=0; x<GRID_SIZE; x++) {
+      let sum = 0;
+      const startX = Math.floor(x*CELL);
+      const startY = Math.floor(y*CELL);
+      for (let yy=0; yy<CELL; yy++) {
+        for (let xx=0; xx<CELL; xx++) {
+          const idx = ((startY+yy)*CANVAS_SIZE + (startX+xx))*4;
+          const r = pixels[idx];
+          const g = pixels[idx+1];
+          const b = pixels[idx+2];
+          const gray = (r+g+b)/3;
+          const norm = Math.max(0, Math.min(1, (gray - BACKGROUND) / RANGE));
+          sum += norm;
+        }
+      }
+      const val = sum/(CELL*CELL);
+      row.push(val);
+    }
+    small.push(row);
+  }
+
+  latestPixels = small;
+
+  gridCtx.clearRect(0,0,CANVAS_SIZE,CANVAS_SIZE);
+  gridCtx.fillStyle = "#000000";
+  gridCtx.fillRect(0,0,CANVAS_SIZE,CANVAS_SIZE);
+
+  for (let y=0; y<GRID_SIZE; y++) {
+    for (let x=0; x<GRID_SIZE; x++) {
+      const gray = Math.round(small[y][x] * 255);
+      gridCtx.fillStyle = `rgb(${gray},${gray},${gray})`;
+      gridCtx.fillRect(x*CELL, y*CELL, CELL, CELL);
+    }
+  }
+
+  document.getElementById("pixelData").value =
+    small.map(row => row.map(v=>v.toFixed(3)).join(", ")).join("\n");
+}
+
+function clearCanvas() {
+  drawCtx.fillStyle = "#262E3F";
+  drawCtx.fillRect(0,0,CANVAS_SIZE,CANVAS_SIZE);
+  requestAnimationFrame(updatePixelGrid);
+}
+
+function saveCSV() {
+  // ensure we have the latest pixels
+  updatePixelGrid();
+
+  if (!latestPixels.length) return;
+
+  const flat = [];
+  for (let y=0; y<GRID_SIZE; y++) {
+    for (let x=0; x<GRID_SIZE; x++) {
+      flat.push(latestPixels[y][x].toFixed(3));
+    }
+  }
+
+  // one row with 784 values
+  const text = flat.join(",") + "\n";
+
+  const blob = new Blob([text], {type:"text/csv"});
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(blob);
+  link.download = "pixels.csv";
+  link.click();
+}
+
+updatePixelGrid();
+</script>
+</body>
+</html>
