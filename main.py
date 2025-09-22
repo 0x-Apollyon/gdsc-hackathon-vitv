@@ -6,9 +6,16 @@ import datetime
 from markupsafe import Markup
 import time
 import transformer_parser
+import tensorflow as tf
+from sklearn.preprocessing import StandardScaler
+import pickle
+import numpy as np
 
 
 app = Flask(__name__)
+model = tf.keras.models.load_model('mnist_model.h5')
+with open('scaler.pkl', 'rb') as f:
+    scaler = pickle.load(f)
 
 
 def process_json(json_content):
@@ -232,7 +239,7 @@ except:
         file_content += f"""
 # Custom Code Execution
 try:
-    {custom_code}
+    {"\n\t".join(custom_code.split("\n"))}
 except Exception as e:
     print(f"Error in custom code: {{e}}")
 
@@ -293,6 +300,10 @@ def prebuilt_transformer_1(model_name):
 def prebuilt_transformer_2(model_name):
     return render_template('transformers_aiaun.html' , model_name=model_name)
 
+@app.route("/digit-demo", methods=['GET'])
+def digit_creator():
+    return render_template('digit_creator.html')
+
 @app.route("/generate-code-transformer", methods=['POST'])
 def generate_code_transformer():
     raw_data = request.data.decode("utf-8")
@@ -308,10 +319,29 @@ def generate_code_transformer():
 def generate_code_mlp():
     raw_data = request.data.decode("utf-8")
     
-
+    print(json.loads(raw_data))
     return jsonify({
             "keras_code": process_json(json.loads(raw_data))
         }) , 200
+
+@app.route("/guess-number",methods=['POST'])
+def guess_number():
+    raw_data = request.data.decode("utf-8")
+    csv_array = json.loads(raw_data)
+    input_data = np.array(csv_array)
+    if input_data.shape[-1] != 784:
+        return jsonify({"error": "Input must have 784 features"}), 400
+
+    if len(input_data.shape) == 1:
+        input_data = input_data.reshape(1, -1)
+
+    input_data = scaler.transform(input_data)
+        
+    predictions = model.predict(input_data)
+    predicted_classes = np.argmax(predictions, axis=1)
+    confidence = np.max(predictions, axis=1)
+
+    return jsonify({"predicted_number": int(predicted_classes[0]),"confidence": float(confidence[0])})
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=1000, debug=True) 
